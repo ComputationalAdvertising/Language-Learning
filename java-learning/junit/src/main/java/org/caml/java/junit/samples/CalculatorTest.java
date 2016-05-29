@@ -33,12 +33,14 @@ public class CalculatorTest {
     @Test
     @Ignore
     public void testAdd() {
+        System.out.println("[INFO] testAdd ...");
         int result = cal.add(1, 2);
         Assert.assertEquals(3, result);
     }
 
     @Test (timeout = 1000)     // 单位：毫秒
     public void testSquareRoot() {
+        System.out.println("[INFO] testSquareRoot ...");
         cal.squareRoot(4);
     }
 

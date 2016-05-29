@@ -24,6 +24,7 @@
         <processorPath useClasspath="true" />
         <module name="design-pattern" />
         <module name="io" />
+        <module name="junit" />
         <module name="logger" />
         <module name="multi-thread" />
         <module name="spring" />
@@ -33,6 +34,7 @@
       <module name="design-pattern" target="1.5" />
       <module name="io" target="1.5" />
       <module name="java-learning" target="1.5" />
+      <module name="junit" target="1.5" />
       <module name="logger" target="1.5" />
       <module name="multi-thread" target="1.5" />
       <module name="spring" target="1.5" />
