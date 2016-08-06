@@ -1,4 +1,4 @@
-package org.caml.java.spring.junit4;
+package org.caml.java.junit.samples;
 
 /**
  * Created by zhouyong on 16/5/29.

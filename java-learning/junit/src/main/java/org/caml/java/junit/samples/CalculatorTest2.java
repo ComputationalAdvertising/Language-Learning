@@ -1,4 +1,4 @@
-package org.caml.java.spring.junit4;
+package org.caml.java.junit.samples;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

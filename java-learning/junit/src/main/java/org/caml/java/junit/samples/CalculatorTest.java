@@ -1,4 +1,4 @@
-package org.caml.java.spring.junit4;
+package org.caml.java.junit.samples;
 
 import org.junit.*;
 import org.junit.Assert;
