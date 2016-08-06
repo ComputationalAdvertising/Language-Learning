@@ -1,0 +1,140 @@
+booster[0]:
+0:[odor=pungent] yes=2,no=1
+	1:[stalk-root=cup] yes=4,no=3
+		3:[stalk-root=missing] yes=8,no=7
+			7:[odor=anise] yes=14,no=13
+				13:[odor=creosote] yes=20,no=19
+					19:leaf=1.99735
+					20:leaf=-1.8
+				14:leaf=-1.80952
+			8:leaf=-1.95062
+		4:[bruises?=no] yes=10,no=9
+			9:leaf=1.77778
+			10:leaf=-1.98104
+	2:[spore-print-color=orange] yes=6,no=5
+		5:[stalk-surface-below-ring=silky] yes=12,no=11
+			11:[cap-surface=scaly] yes=16,no=15
+				15:leaf=-1.99117
+				16:leaf=1
+			12:[gill-size=narrow] yes=18,no=17
+				17:leaf=1.77143
+				18:leaf=-1.5
+		6:leaf=1.85965
+booster[1]:
+0:[odor=pungent] yes=2,no=1
+	1:[bruises?=no] yes=4,no=3
+		3:leaf=1.13207
+		4:[odor=musty] yes=8,no=7
+			7:[odor=spicy] yes=12,no=11
+				11:leaf=-1.12641
+				12:leaf=1.08392
+			8:leaf=1.09118
+	2:[spore-print-color=orange] yes=6,no=5
+		5:[stalk-surface-below-ring=silky] yes=10,no=9
+			9:[gill-size=narrow] yes=14,no=13
+				13:[bruises?=no] yes=18,no=17
+					17:leaf=-1.06692
+					18:leaf=2.08
+				14:leaf=-1.13236
+			10:[gill-size=narrow] yes=16,no=15
+				15:leaf=0.928896
+				16:leaf=-0.784694
+		6:leaf=0.994744
+booster[2]:
+0:[odor=pungent] yes=2,no=1
+	1:[bruises?=no] yes=4,no=3
+		3:leaf=1.03409
+		4:[odor=musty] yes=8,no=7
+			7:[odor=spicy] yes=12,no=11
+				11:leaf=-1.00925
+				12:leaf=0.934041
+			8:leaf=0.947964
+	2:[spore-print-color=orange] yes=6,no=5
+		5:[gill-size=narrow] yes=10,no=9
+			9:[spore-print-color=yellow] yes=14,no=13
+				13:leaf=-0.862367
+				14:[stalk-color-below-ring=buff] yes=16,no=15
+					15:leaf=0.996309
+					16:leaf=-0.217869
+			10:leaf=-1.03467
+		6:leaf=0.773973
+booster[3]:
+0:[odor=pungent] yes=2,no=1
+	1:[stalk-root=cup] yes=4,no=3
+		3:[stalk-root=missing] yes=8,no=7
+			7:[gill-spacing=crowded] yes=12,no=11
+				11:[bruises?=no] yes=16,no=15
+					15:leaf=0.535599
+					16:leaf=-0.591832
+				12:leaf=0.99398
+			8:leaf=-0.731796
+		4:leaf=-0.74401
+	2:[spore-print-color=orange] yes=6,no=5
+		5:[stalk-surface-below-ring=silky] yes=10,no=9
+			9:leaf=-0.950054
+			10:leaf=0.382551
+		6:leaf=0.587063
+booster[4]:
+0:[odor=pungent] yes=2,no=1
+	1:[bruises?=no] yes=4,no=3
+		3:leaf=0.949695
+		4:[odor=musty] yes=8,no=7
+			7:[odor=spicy] yes=14,no=13
+				13:leaf=-0.846263
+				14:leaf=0.571051
+			8:leaf=0.604424
+	2:[gill-size=narrow] yes=6,no=5
+		5:[population=numerous] yes=10,no=9
+			9:leaf=-0.1213
+			10:leaf=0.945553
+		6:leaf=-0.863671
+booster[5]:
+0:[stalk-surface-above-ring=smooth] yes=2,no=1
+	1:[gill-size=narrow] yes=4,no=3
+		3:[cap-surface=grooves] yes=8,no=7
+			7:leaf=0.583804
+			8:leaf=-0.306787
+		4:[spore-print-color=orange] yes=10,no=9
+			9:leaf=-0.743021
+			10:leaf=0.65627
+	2:leaf=0.772856
+booster[6]:
+0:[odor=pungent] yes=2,no=1
+	1:leaf=0.529371
+	2:leaf=-0.368781
+booster[7]:
+0:[spore-print-color=buff] yes=2,no=1
+	1:[spore-print-color=brown] yes=4,no=3
+		3:[gill-spacing=crowded] yes=6,no=5
+			5:leaf=-0.121973
+			6:leaf=0.655688
+		4:leaf=-0.495877
+	2:leaf=-0.566663
+booster[8]:
+0:[odor=musty] yes=2,no=1
+	1:[gill-size=narrow] yes=4,no=3
+		3:leaf=0.190001
+		4:leaf=-0.467497
+	2:leaf=0.507049
+booster[9]:
+0:leaf=0.0182774
+booster[10]:
+0:leaf=0.00210745
+booster[11]:
+0:leaf=0.000241462
+booster[12]:
+0:leaf=3.22454e-05
+booster[13]:
+0:leaf=8.40018e-06
+booster[14]:
+0:leaf=2.04057e-06
+booster[15]:
+0:leaf=8.21068e-07
+booster[16]:
+0:leaf=3.22461e-07
+booster[17]:
+0:leaf=1.43298e-07
+booster[18]:
+0:leaf=-6.01703e-07
+booster[19]:
+0:leaf=4.18519e-07

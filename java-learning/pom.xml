@@ -15,6 +15,7 @@
         <module>multi-thread</module>
         <module>design-pattern</module>
         <module>junit</module>
+        <module>ml-online</module>
     </modules>
 
     <dependencies>
