@@ -26,6 +26,7 @@
         <module name="io" />
         <module name="junit" />
         <module name="logger" />
+        <module name="ml-online" />
         <module name="multi-thread" />
         <module name="spring" />
       </profile>
@@ -36,6 +37,7 @@
       <module name="java-learning" target="1.5" />
       <module name="junit" target="1.5" />
       <module name="logger" target="1.5" />
+      <module name="ml-online" target="1.5" />
       <module name="multi-thread" target="1.5" />
       <module name="spring" target="1.5" />
     </bytecodeTargetLevel>

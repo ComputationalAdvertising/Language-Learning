@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- 通过属性注入 (setter方法) -->
+    <bean name="user1" class="org.caml.java.spring.bean.demo.User">
+        <property name="id" value="1"></property>
+        <property name="name" value="ZY"></property>
+    </bean>
+
+    <!--通过构造方法注入 -->
+    <bean name="user2" class="org.caml.java.spring.bean.demo.User">
+        <constructor-arg value="2"></constructor-arg>
+        <constructor-arg value="ZY-ZYL"></constructor-arg>
+    </bean>
+
+    <bean name="user3" class="org.caml.java.spring.bean.demo.User">
+        <property name="id" value="1"></property>
+        <property name="name">
+            <null />
+        </property>
+        <property name="gender" value="true"></property>
+
+        <!-- Set集合 (String型) -->
+        <property name="addressSet">
+            <set>
+                <value>中关村</value>
+                <value>望京</value>
+            </set>
+        </property>
+
+        <!--
+            Set集合 (Integer型) 如果指定强类型，如Set<Integer>，则配置时可以不指定type，Spring能自动转换。
+            如果没有指定类型，默认当成String处理。这时指定明确的指定了类型，Spring才可以进行转换
+        -->
+        <property name="numberSet">
+            <set>
+                <value type="java.lang.Integer">10</value>
+                <value type="java.lang.Integer">20</value>
+                <value type="java.lang.Integer">30</value>
+            </set>
+        </property>
+
+        <!-- List集合 -->
+        <property name="addressList">
+            <list>
+                <value>中关村</value>
+                <value>望京</value>
+                <value>望京</value>
+            </list>
+        </property>
+
+        <!-- 数组， 与List集合的配置一样 -->
+        <property name="addressArray">
+            <list>
+                <value>中关村</value>
+                <value>望京</value>
+                <value>望京</value>
+            </list>
+        </property>
+
+        <!-- Map集合 -->
+        <property name="addressMap">
+            <map>
+                <entry key="add1" value="中关村"></entry>
+                <entry key="add2" value="望京"></entry>
+            </map>
+        </property>
+
+        <!-- Properties集合 -->
+        <property name="properties">
+            <props>
+                <prop key="pageSize">20</prop>
+                <prop key="maxFileSize">1000K</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="student" class="org.caml.java.spring.bean.demo.Student">
+        <property name="score" value="99"/>
+        <property name="user"> <ref parent="user1"/> </property>
+    </bean>
+
+    <!--
+        配置dao, 如果这个bean只是用于抽取出多个bean的公共配置，则加上abstract="true", 这是无需写class属性
+    -->
+    <bean id="baseDao" abstract="true">
+        <property name="dataSource" value="myDataSource"></property>
+    </bean>
+
+    <!--
+        在其他bean中，可以制定parent属性，表示要从哪个父bean继承过来一些公共配置
+    -->
+    <bean id="myUserDao" parent="baseDao" class="org.caml.java.spring.bean.demo.UserDao"></bean>
+
+    <bean id="myRoleDao" parent="baseDao" class="org.caml.java.spring.bean.demo.RoleDao"></bean>
+
+</beans>
