@@ -1,12 +1,5 @@
 target/
-<<<<<<< HEAD
 out/
 .idea/
 *.class
 *.out
-=======
-.idea/
-out/
-*.class
-
->>>>>>> db1195a04a565e5a43004ce07ea3b2c226950175

@@ -1,22 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-<<<<<<< HEAD
-    <list default="true" id="6fa66f8b-2357-4c05-8dea-ad42966798c5" name="Default" comment="" />
-=======
+    <list default="true" id="6fa66f8b-2357-4c05-8dea-ad42966798c5" name="Default" comment="" /=======
     <list default="true" id="6fa66f8b-2357-4c05-8dea-ad42966798c5" name="Default" comment="">
-<<<<<<< HEAD
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../.gitignore" afterPath="$PROJECT_DIR$/../.gitignore" />
-=======
       <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/utils/ContainerUtils.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../.gitignore" afterPath="$PROJECT_DIR$/../.gitignore" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/compiler.xml" afterPath="$PROJECT_DIR$/.idea/compiler.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules.xml" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pom.xml" afterPath="$PROJECT_DIR$/pom.xml" />
->>>>>>> db1195a04a565e5a43004ce07ea3b2c226950175
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
->>>>>>> 20c4d8c469ba9c6dbe90ca6fca548a348bc88f44
     <ignored path="java-learning.iws" />
     <ignored path=".idea/workspace.xml" />
     <ignored path="$PROJECT_DIR$/out/" />
@@ -49,27 +43,23 @@
     <favorites_list name="java-learning" />
   </component>
   <component name="FileEditorManager">
-<<<<<<< HEAD
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file leaf-file-name="pom.xml" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/pom.xml">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="323">
               <caret line="19" column="4" selection-start-line="19" selection-start-column="4" selection-end-line="26" selection-end-column="19" />
-=======
     <leaf>
       <file leaf-file-name="appcontext-demo.xml" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/spring/src/main/resources/config/spring/appcontext-demo.xml">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
               <caret line="81" column="52" selection-start-line="81" selection-start-column="52" selection-end-line="81" selection-end-column="52" />
->>>>>>> db1195a04a565e5a43004ce07ea3b2c226950175
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-<<<<<<< HEAD
       <file leaf-file-name="Calculator.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/junit/src/main/java/org/caml/java/junit/samples/Calculator.java">
           <provider selected="true" editor-type-id="text-editor">
@@ -107,13 +97,11 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="340">
               <caret line="20" column="19" selection-start-line="20" selection-start-column="19" selection-end-line="20" selection-end-column="19" />
-=======
       <file leaf-file-name="web.xml" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/spring/src/main/webapp/WEB-INF/web.xml">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
               <caret line="9" column="45" selection-start-line="9" selection-start-column="45" selection-end-line="9" selection-end-column="45" />
->>>>>>> db1195a04a565e5a43004ce07ea3b2c226950175
               <folding />
             </state>
           </provider>
@@ -122,11 +110,9 @@
       <file leaf-file-name="Student.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/spring/src/main/java/org/caml/java/spring/bean/demo/Student.java">
           <provider selected="true" editor-type-id="text-editor">
-<<<<<<< HEAD
             <state relative-caret-position="272">
               <caret line="16" column="9" selection-start-line="16" selection-start-column="9" selection-end-line="16" selection-end-column="9" />
               <folding />
-=======
             <state vertical-scroll-proportion="0.0">
               <caret line="11" column="27" selection-start-line="11" selection-start-column="27" selection-end-line="11" selection-end-column="27" />
               <folding>
