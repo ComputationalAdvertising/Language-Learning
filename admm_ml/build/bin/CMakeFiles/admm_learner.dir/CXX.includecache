@@ -1,0 +1,18 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../include/hello.h
+iostream
+-
+
+/home/zhouyong/myhome/2016-Planning/C-CPP/zy_cpp/src/admm_learner.cpp
+hello.h
+/home/zhouyong/myhome/2016-Planning/C-CPP/zy_cpp/src/hello.h
+iostream
+-
+
