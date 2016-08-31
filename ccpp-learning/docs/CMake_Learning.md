@@ -52,6 +52,8 @@ zhouyong@ubuntu:~/myhome/2016-Planning/C-CPP/cmake-learning/cmake_1_samples/buil
 
 在0.2中通过一个简单的示例，介绍了cmake在项目构建中时如何使用的。CMakeLists.txt文件中一些语法 先简单介绍一下。先说明一点：**cmake关键词不区分大小写，大小写含义相同**.
 
+> **注意：这里说的是关键词不分大小写，而不是cmake变量。谨记！！！**
+
 | 关键词 | 含义 |
 | --- | --- |
 | ```cmake_minimum_required(version 3.2)``` | 指定cmake最低版本。这里是3.2版. |
@@ -73,7 +75,7 @@ zhouyong@ubuntu:~/myhome/2016-Planning/C-CPP/cmake-learning/cmake_1_samples/buil
 
 完整语法：```INCLUDE_DIRECTORIES([AFTER|BEFORE] [SYSTEM] dir1 dir2 ...)```
 
-#### 2.2. cmake常用的变量
+#### 2.2. cmake常用的变量 (不是关键词，注意大小写)
 
 cmake使用```${}```进行变量的饮用。在IF等语句中，直接使用变量名而不通过${}取值。
 
