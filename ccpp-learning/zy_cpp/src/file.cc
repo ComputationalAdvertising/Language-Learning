@@ -3,17 +3,17 @@
  * Author: zhouyong03@meituan.com
  * Created Time: 2016-08-22 15:28:14
  */
- 
+
+#include "file.h"
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
-#include <string>
 using namespace std;
  
 
-string fileData(const char* fileName) 
+string file_content(const char* file_name) 
 {
-	ifstream in(fileName, ios::in);
+	ifstream in(file_name, ios::in);
 	istreambuf_iterator<char> beg(in), end;
 	string strData(beg, end);
 	in.close();
@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
 	}
 	std::cout << "lines: " << count << std::endl;
 
-	string content = fileData("../../data/example.txt");
+	string content = file_content("../../data/example.txt");
 	std::cout << "content: " << content << std::endl;
 	return 0;
 }
