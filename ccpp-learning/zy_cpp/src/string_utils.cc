@@ -6,6 +6,7 @@
 #include "io.h"
 #include "common.h"
 #include <string>
+#include <string.h>
 #include <vector>
 #include <sstream>
 #include <iostream>
@@ -23,7 +24,11 @@ char* str2char(string &str);
 int main(int argc, char* argv[])
 {
 	string str = "   I love this ";
-	admm::print_for_streambuf(str);
+	admm::io::print_for_streambuf(str);
+	string file_name = "../data/example.txt";
+	std:: cout << "[INFO] 读取每一行并打印 ... " << flush;
+	admm::io::visit_file(file_name);
+	
 	std::cout << "[INFO] origin str: " << str << ", length: " << str.length() << ", size: " << str.size() << std::endl;
 	std::cout << "去空格后 ..." << std::endl;
 	trim(str);
@@ -62,7 +67,7 @@ int main(int argc, char* argv[])
 char* str2char(string &str) {
 	const int len = str.length();
 	char* chs = new char[len+1];
-	strcpy(chs, str.c_str());
+	strcpy(chs, str.c_str());	// strcpy in string.h 
 	return chs;
 }
 

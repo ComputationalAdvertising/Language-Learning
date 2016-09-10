@@ -6,7 +6,8 @@
 # Created Time: 2016-08-31 17:21:17
 #########################################
  
-file_name="string_utils.cc"
+#file_name="string_utils.cc"
+file_name="test.cc"
 
 cmd="g++ ${file_name} -o xx"
 ${cmd}
