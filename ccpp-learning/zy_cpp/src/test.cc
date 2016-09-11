@@ -12,25 +12,6 @@
 #include <iostream>
 using namespace std;
 
-string file_content(const string & file_name) 
-{
-	string content = "I";
-	ifstream in(file_name.c_str());
-	if (! in) {
-		std::cerr << "unable to file: " << file_name << std::endl;
-	}
-	string line;
-	while (in && std::getline(in, line)) {
-		content += line + "\n";
-	}
-	return content;
-}
-
-
-// 2. string相关
-
-// 3. class相关
-
 int main(int argc, char* argv[])
 {
 	// 类测试
