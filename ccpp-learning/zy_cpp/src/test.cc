@@ -26,15 +26,6 @@ string file_content(const string & file_name)
 	return content;
 }
 
-// 1. file相关
-string file_content(const char* file_name) 
-{
-	ifstream in(file_name, ios::in);
-	istreambuf_iterator<char> beg(in), end;
-	string strData(beg, end);
-	in.close();
-	return strData.substr(0, strData.size()-1);			// drop '\n' of last line 
-}
 
 // 2. string相关
 
@@ -42,10 +33,16 @@ string file_content(const char* file_name)
 
 int main(int argc, char* argv[])
 {
+	// 类测试
+	admm::io::Base a(2);
+	admm::io::Derived b(3,4);
+	a.print();
+	b.print();
+	b.Base::print();
 	string file_name = "../data/example.txt";
 	string file_cont = admm::io::file_content(file_name.c_str());
 	//string file_cont = file_content(file_name);
 	std::cout << "file_name: " << file_name << std::endl;
-	std::cout << "file_cont:\n " << file_cont << std::endl;
+	std::cout << "file_cont:\n" << file_cont << std::endl;
 	return 0;
 }

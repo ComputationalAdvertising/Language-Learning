@@ -13,12 +13,48 @@
 #include <fstream>
 #include <iostream>
 #include <cstdlib>
+#include "./base.h"
 using namespace std;
 
 namespace admm {
 
 namespace io {
 
+class Base {
+
+private:
+	int b_number;
+
+public:
+	Base() {}
+	Base(int i): b_number(i) {}
+	int get_number() {
+		return b_number;
+	}
+
+	void print() {
+		std::cout << b_number << std::endl;
+	}
+	~Base() {
+		std::cout << "Base destructor!" << std::endl;
+	}
+};
+
+class Derived: public Base {
+private:
+	int d_number;
+
+public:
+	Derived(int i, int j): Base(i), d_number(j) {};
+	void print() {
+		std::cout << get_number() << " ";
+		std::cout << d_number << std::endl;
+	}
+
+	~Derived() {
+		std::cout << "Derived destructor!" << std::endl;
+	}
+};
 
 /*!
  * \brief open file and return legal and valid ifstream
