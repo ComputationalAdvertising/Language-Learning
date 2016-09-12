@@ -4,8 +4,15 @@
  * Created Time: 2016-09-11 23:12:39
  */
  
-#include "io.h"
+#include "../io.h"
 using namespace admm::io; 
+
+
+void Derived::print() {
+	std::cout << "admm::io::Derived::print() ..." << std::endl;
+	std::cout << "admm::io::Derived: test success ..." << std::endl;
+}
+
 
 void admm::io::test_print() {
 	std::cout << "admm::io::test_print() ... " << std::endl;

@@ -46,13 +46,10 @@ private:
 
 public:
 	Derived(int i, int j): Base(i), d_number(j) {};
-	void print();
-	/*
 	void print() {
 		std::cout << get_number() << " ";
 		std::cout << d_number << std::endl;
 	}
-	*/
 
 	~Derived() {
 		std::cout << "Derived destructor!" << std::endl;
