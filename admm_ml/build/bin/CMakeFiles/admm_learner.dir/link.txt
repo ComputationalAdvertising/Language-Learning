@@ -1,1 +1,0 @@
-/usr/bin/c++   -Wall -std=c++11   CMakeFiles/admm_learner.dir/admm_learner.cpp.o  -o ../../bin/admm_learner  -L/home/zhouyong/myhome/2016-Planning/C-CPP/zy_cpp/lib -rdynamic -Wl,-Bstatic -lhello -Wl,-Bdynamic -Wl,-rpath,/home/zhouyong/myhome/2016-Planning/C-CPP/zy_cpp/lib 

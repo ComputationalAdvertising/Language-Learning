@@ -13,7 +13,7 @@
 
 项目目录如下：
 
-```
+`````add_subdirectory```
 /home/zhouyong/myhome/2016-Planning/C-CPP/cmake-learning/cmake_1_samples
 ```
 
@@ -52,7 +52,7 @@ zhouyong@ubuntu:~/myhome/2016-Planning/C-CPP/cmake-learning/cmake_1_samples/buil
 
 在0.2中通过一个简单的示例，介绍了cmake在项目构建中时如何使用的。CMakeLists.txt文件中一些语法 先简单介绍一下。先说明一点：**cmake关键词不区分大小写，大小写含义相同**.
 
-> **注意：这里说的是关键词不分大小写，而不是cmake变量。谨记！！！**
+> **注意：这里说的是关键词不分大小写，而不是cmake变量。cmake变量是需要区分大小写的，比如```EXECUTABLE_OUTPUT_PATH``` 就只能大写。谨记！！！**
 
 | 关键词 | 含义 |
 | --- | --- |
@@ -63,6 +63,7 @@ zhouyong@ubuntu:~/myhome/2016-Planning/C-CPP/cmake-learning/cmake_1_samples/buil
 | ```PROJECT_BINARY_DIR``` | 标识目标二进制文件目录。
 | ```PROJECT_SOURCE_DIR``` | 标识目标源文件目录。
 | ```ADD_EXECUTABLE``` | 添加可执行文件名称，以及所需要的源文件。|
+| ```EXECUTABLE_OUTPUT_PATH``` | 重定义可执行文件最后输出路径 |
 
 ### 2. cmake语法
 
@@ -75,7 +76,7 @@ zhouyong@ubuntu:~/myhome/2016-Planning/C-CPP/cmake-learning/cmake_1_samples/buil
 
 完整语法：```INCLUDE_DIRECTORIES([AFTER|BEFORE] [SYSTEM] dir1 dir2 ...)```
 
-#### 2.2. cmake常用的变量 (不是关键词，注意大小写)
+#### 2.2. cmake常用的变量 (**不是关键词，注意大小写**)
 
 cmake使用```${}```进行变量的饮用。在IF等语句中，直接使用变量名而不通过${}取值。
 
@@ -111,7 +112,6 @@ cmake自定义变量主要有隐式定义和显士定义两种。PROJECT指令�
 
 #### 2.4. cmake系统信息
 
-
 ### 1. 使用cmake驾驭工程
 
 一个c/cpp项目工程的结构一般是什么样的？如何加入第三方（third party）工具作为当前项目的引用？
@@ -124,4 +124,14 @@ cmake自定义变量主要有隐式定义和显士定义两种。PROJECT指令�
 
 ```
 
- 
+项目目下的CMakeList.txt内容如下： 
+
+```
+cmake_minimum_required(VERSION 3.2)################################################### 1. Project##################################################project(admm-learner)################################################### 2. Initialize CXXFLAGS && C++11 Activation################################################### 2.1. Initialize CXXFLAGS.set(CMAKE_CXX_FLAGS                "-Wall -std=c++11")set(CMAKE_CXX_FLAGS_DEBUG          "-O0 -g")set(CMAKE_CXX_FLAGS_MINSIZEREL     "-Os -DNDEBUG")set(CMAKE_CXX_FLAGS_RELEASE        "-O4 -DNDEBUG")set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g")# 2.2. Compiler-specific C++11 activation.MESSAGE(STATUS "[INFO] ${PROJECT_SOURCE_DIR} CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}") MESSAGE(STATUS "[INFO] ${PROJECT_SOURCE_DIR} CMAKE_CXX_COMPILER: ${CMAKE_CXX_COMPILER}")IF ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")	EXECUTE_PROCESS(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)	IF (NOT (GCC_VERSION VERSION_GREATER 4.7 OR GCC_VERSION VERSION_EQUAL 4.7))		MESSAGE(FATAL_ERROR "[FATAL_ERROR] ${PROJECT_SOURCE_DIR} ${PROJECT_NAME} requires g++ 4.7 or greater.")	ELSE ()		MESSAGE(STATUS "[INFO] ${PROJECT_SOURCE_DIR} ${PROJECT_NAME} g++ compiler version > 4.7 !")	ENDIF ()ELSEIF ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")ELSE ()	MESSAGE(FATAL_ERROR "[FATAL_ERROR] ${PROJECT_SOURCE_DIR} Your C++ compiler does not support C++11.")ENDIF ()################################################### 3. Dependenced include && library##################################################include_directories(${PROJECT_SOURCE_DIR}/include)link_directories(${PROJECT_SOURCE_DIR}/lib)set(LIBRARY_OUTPUT_PATH "${PROJECT_SOURCE_DIR}/lib")set(EXECUTABLE_OUTPUT_PATH "${PROJECT_SOURCE_DIR}/bin")################################################### 4. Add Subdirectory##################################################add_subdirectory(src)
+```
+
+注意：
+
+1. 一定要保证变量名大写。
+2. ```set(EXECUTABLE_OUTPUT_PATH ~)```置于```add_subdirectory```之前 才有效。
+
