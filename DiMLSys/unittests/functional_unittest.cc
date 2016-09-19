@@ -39,7 +39,7 @@ public:
 int main(int argc, char* argv[]) 
 {
 	// 普通函数
-	Gradient = TestFunc();
+	Gradient = TestFunc;
 	int result = Gradient(10);
 	std::cout << "普通函数：" << result << std::endl;
 
@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 	cout << "仿函数：" << result << endl;
 
 	// 类成员函数
-	Gradient testObj;
+	TestClass testObj;
 	Gradient = std::bind(&TestClass::ClassMember, testObj, std::placeholders::_1);
 	result = Gradient(80);
 	cout << "类成员函数：" << result << endl;

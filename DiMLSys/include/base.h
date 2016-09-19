@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 #include <functional>
-#include <dmlc/logging.h>
-#include <dmlc/data.h>
+//#include <dmlc/logging.h>
+//#include <dmlc/data.h>
 
 // default_nthreads
 #define DEFAULT_NTHREADS 2
@@ -23,9 +23,9 @@ typedef std::vector<std::pair<std::string, std::string>> KWArgs;
 typedef float real_t;
 typedef uint32_t featid_t;
 /*! line of the data */
-typedef dmlc::Row<featid_t> Row;	
+//typedef dmlc::Row<featid_t> Row;	
 /*! data block of the data */
-typedef dmlc::RowBlockIter<featid_t> DataStore;
+//typedef dmlc::RowBlockIter<featid_t> DataStore;
 /*! gradient */
 typedef std::function<real_t(real_t pred, real_t label, featid_t idx, real_t value)> Gradient;
 /*! updater */
@@ -41,8 +41,8 @@ typedef std::function<real_t(real_t* w, featid_t idx, real_t gradient)> Updater;
  * \return the new feature index
  */
 inline featid_t EncodeFeatGroupId(featid_t idx, int gid, int nbits) {
-	CHECK_GE(gid, 0);
-	CHECK_LT(gid, 1 << nbits);
+	//CHECK_GE(gid, 0);
+	//CHECK_LT(gid, 1 << nbits);
 	return (idx << nbits) | gid;
 }
 

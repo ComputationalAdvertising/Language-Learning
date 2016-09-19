@@ -46,7 +46,7 @@ set(EXECUTABLE_OUTPUT_PATH "${PROJECT_SOURCE_DIR}/bin")
 # 4. Add Subdirectory
 ##################################################
 add_subdirectory(src)
-
+add_subdirectory(unittests)
 ##################################################
 # 5. Executable Output
 ##################################################
