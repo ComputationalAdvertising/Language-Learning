@@ -13,7 +13,7 @@
 
 项目目录如下：
 
-`````add_subdirectory```
+```
 /home/zhouyong/myhome/2016-Planning/C-CPP/cmake-learning/cmake_1_samples
 ```
 

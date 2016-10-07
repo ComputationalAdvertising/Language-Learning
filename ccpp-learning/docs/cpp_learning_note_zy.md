@@ -8,9 +8,9 @@
 + 基础知识 (按照字母顺序)
 	+ namespace 使用 
 + C++专题
-	+ string专题 (```#include<string>```) 
-		+ string, char*, char[]转换: http://blog.csdn.net/cogbee/article/details/8931838
+	+ string专题
 	+ io专题
+	+ C++11新特性
  
 + 项目构建
 
@@ -111,3 +111,12 @@ int main(int argc, char* argv[])
 }
 
 ```
+
+
+## C++专题
+
+### C++11新特性
+
+#### std::functional
+
+#### std::bind
