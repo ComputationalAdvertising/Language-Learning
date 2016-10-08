@@ -144,8 +144,41 @@ Dual Ascent方法求解问题时，目标函数必须满足强凸函数的条件
 
 > 增广拉格朗日乘子法的目标：**解决Dual Ascent方法对目标函数要求过于严格的问题。**
 
-为了放松假设条件，同时比较好优化...
+Argumented Lagrangians方法的核心思想：
 
+| 通过引入惩罚函数项（二次项），放松对目标函数\\(f(x)\\)严格凸的限制，同时使得算法更加稳健。|
+| --- |
+
+具体做法：在原有的拉格朗日公式中添加惩罚函数项。即：
+
+$$
+\mathcal{L}_{\rho}(x, \beta) = f(x) + \beta^T (Ax-b) + \frac{\rho}{2} {\Vert Ax-b \Vert}_2^2     \qquad\quad(diml.2.5.9)
+$$
+
+> 公式解读：
+> 
+$$
+\mathcal{L}_{\rho}(x, \beta) = \overbrace{f(x)}^{目标函数} + \overbrace{ \underbrace{\beta^T(Ax-b)}_{拉格朗日乘子项} + \underbrace{\frac{\rho}{2} {\Vert Ax-b \Vert}_2^2}_{惩罚函数项} }^{增广拉格朗日乘子项}
+$$
+
+对应的参数迭代公式：
+
+$$
+\begin{align}
+x^{k+1} & := \arg \min_{x} \mathcal{L}(x, \beta^k) \qquad\qquad\qquad\qquad (step1) \\\
+\beta^{k+1} & := \beta^k + \alpha^k \nabla g(\beta) = \beta^k + \rho(Ax^{k+1}-b)  \quad\;(step2)
+\end{align}  \qquad(diml.2.5.10)
+$$
+
+因为惩罚函数项是一个二次项，step1求解释时 写成矩阵形式，无法用分块形式进行并行化求解。
+
+虽然增广拉格朗日乘子法放松了对目标函数的限制，但是也破坏了Dual Ascent方法利用分解参数来并行求解的优化。即便当目标函数\\(f(x)\\)是separable时，对于Augmented Lagrangians却是not separable的。
+
+如果能结合Dual Ascent的并行求解的优势 和 Augmented Lagrangians优秀的收敛性质，那么就可以使得大多数目标函数求解都能在分布式环境下并行实现了，岂不美哉！！！
+
+果然在2010年由Stephen Boyd大师等人提升了ADMM算法，可以解决上述的问题。为此它们长篇论述了ADMM算法的演化过程，参考论文：[Distributed Optimization and Statistical Learning via the Alternating Direction Method of Multipliers](http://web.stanford.edu/~boyd/papers/pdf/admm_distr_stats.pdf) 该文被《Foundations and Trends in Machine Learning》录入。
+
+> 说明：本章讲述的ADMM的相关，都是源于此文章。
 
 ### ADMM算法框架
 

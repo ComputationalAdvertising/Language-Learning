@@ -115,7 +115,7 @@ $$
 
 $$
 \begin{align}
-x^{k+1} & := \arg \min_{x} L(x,\beta^{k}) \quad（x-最小化，无法并行）\qquad(1)\\
+x^{k+1} & := \arg \min_{x} L(x,\beta^{k}) \quad（x-最小化，无法并行）\qquad(1) \\\
 \beta^{k+1} & := \beta^{k} + \alpha^k \nabla g(\beta) = y^k + \rho(A x^{k+1} -b) \quad (对偶变量更新，\alpha^k为步长) \quad(2)
 \end{align} \qquad\qquad(1.10)
 $$
