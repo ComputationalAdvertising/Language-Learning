@@ -1,7 +1,28 @@
-## chapter4: DiMLSys之算法框架-ADMM
+title: "第5章：DidimlSys-算法框架-ADMM" 
+mathjax: true
+date: 2015-01-05 18:30:31
+categories: 
+	- 分布式机器学习
+tags: 
+	- ADMM
+	- 交叉方向乘子法
+	- 梯度提升法
+	- 受限约束优化
+---
 
 + author: zhouyongsdzh@foxmail.com
-+ date: 20160329
++ date: 2016-03-29
++ weibo: [@周永_52diml](http://weibo.com/p/1005051707438033/home?)
+
+---
+
+**内容列表**
+
++ 写在前面
++ 约束优化问题
+	+ 对偶提升
+	+ 对偶分解
++ 交叉方向乘子法
 
 ### 写在前面
 
@@ -9,8 +30,122 @@
 
 ADMM算法结构天然地适用于分布式环境下具体任务的求解。
 
+### 约束优化问题一般解决方案
 
-### 引入：受限约束优化问题
+约束优化问题可以分为两大类：等式约束优化和不等式约束优化。我们这里以等式约束优化为例，一个典型的等式约束优化问题，形式化表示如下：
+
+$$
+\begin{align}
+& \; \min_{x} \;\; f(x) \\\
+& s.t. \; Ax = b
+\end{align} 	\qquad\qquad(diml.2.5.1)
+$$
+
+其中，\\(f(x)\\)是待优化的**目标函数**，\\(Ax=b\\)作为优化目标函数时需要满足的**约束条件**。\\(s.t\\)是英文```subject to```的缩写。
+
+通常，求解等式约束优化问题最简单的方法之一－对偶提升法。
+
+<br>
+#### 对偶提升法
+
+对偶提升法（Dual Ascent）的核心思想是通过引入一个**对偶变量**，利用**交替优化**的思路，使得两个同时达到最优。
+
+> 对偶变量即是拉格朗日乘子，又称算子。
+
+对公式\\((diml.2.5.1)\\)引入拉格朗日乘子（用\\(\beta\\)表示），得到拉格朗日公式为：
+
+$$
+\mathcal{L}(x, \beta) = f(x) + \beta(Ax-b)    \qquad\qquad(diml.2.5.2)
+$$
+
+对偶函数用\\(g(\beta)\\)表示： 
+
+$$
+g(\beta) = \inf_{x} \mathcal{L}(x, \beta) = -f^{*}(-A^T\beta) - b^T\beta  \qquad\\qquad(diml.2.5.3)
+$$
+
+对偶提升就是最大化对偶函数，即\\(\text{maximize}\; g(\beta)\\)。在**强对偶性**假设下，原函数和对偶函数会同时达到最优，可以得到：
+
+$$
+x^{*} = \arg \min_{x} \mathcal{L}(x, \beta^{*})   \qquad\qquad\quad(diml.2.5.4)
+$$
+
+> 什么是强对偶性？
+> 
+> 如果最小化**原凸函数**等价于最大化**对偶函数**时，称为强对偶性。即\\(\min f(x) = \max g(\beta)\\)
+
+如果对偶函数\\(g(\beta)\\)可导，使用Dual Ascent法，交替更新参数，使其同时收敛到最优。参数更新的迭代公式如下：
+
+$$
+\begin{align}
+x^{k+1} & := \arg \min_{x} \mathcal{L}(x, \beta^{k})  \qquad\qquad\;(\text{step1}) \\\
+\beta^{k+1} & := \beta^k + \alpha^{k}(A x^{k+1} - b) \qquad\quad(\text{step2})
+\end{align} \qquad(diml.2.5.5)
+$$
+
+> 公式\\((diml.2.5.5)\\)解释：
+> 
+> step1: 求拉格朗日函数极小化时对应的参数\\(x\\)，具体实现时，需要对参数\\(x\\)求偏导，令\\(\frac{\partial}{\partial{x}} L(x, \beta^k) = 0\\).
+> 
+> step2: 公式\\((diml.2.5.3)\\)对\\(\beta\\)求偏导得到梯度，使用梯度提升法得到对偶变量\\(\beta\\)的迭代公式，\\(\alpha^k\\)为迭代步长。这一步称为对偶提升。
+
+对偶提升法在满足强对偶性假设下可以证明公式\\((diml.2.5.5)\\)能达到收敛。即要求目标函数\\(f(x)\\)为强凸函数（一般函数难以满足）。
+
+> 什么是强凸函数？（在[《深入强出机器学习》系列 第10章：深入浅出ML之cluster家族 中的EM算法]()中有提到）
+> 
+> 强凸函数需满足：\\(E[f(x)] > f(E(x)) \\)
+> 
+> 函数\\(f: I \rightarrow R\\)成为强凸的，若\\(\exists\alpha > 0\\)，使\\(\forall(x, y) \in I \times I, \forall t \in [0, 1]\\)，恒有：
+> 
+$$
+f[tx+(1-t)y] \le tf(x) + (1-t) f(y) - t(1-t) \alpha (x-y)^2
+$$
+
+<br>
+#### 对偶分解
+
+Dual Ascent法有一个非常好的性质：
+
+**当目标函数\\(f\\)可分（separable）时，整个优化问题可以拆分成多个子优化问题，分块优化后得到局部分数，然后汇集起来 整体更新全局参数，有利于问题的并行化处理。这个过程称为对偶分解（Dual Decomposition）**
+
+对公式\\((diml.2.5.1)\\)拆分表示为：
+
+$$
+\begin{align}
+& \min_{x} f(x) = \sum_{i=1}^{k} f_i(x_i) \\\
+& s.t. \; Ax = \sum_{i=1}^{k} A_i x_i = b 
+\end{align}   \qquad\qquad(diml.2.5.6)
+$$
+
+对应的拉格朗日函数：
+
+$$
+\mathcal{L}(x, \beta) = \sum_{i=1}^{k} \mathcal{L_i}(x_i, \beta) = \sum_{i=1}^{k} \left(f_i(x_i) + \beta^T A_i x_i - \frac{1}{N}\beta^T b \right)  \qquad(diml.2.5.7)
+$$
+
+对应的参数更新公式：
+
+$$
+\begin{align}
+x_{i}^{k+1} & := \arg \min_{x} L_i(x_i,\beta^{k}) \qquad\qquad\qquad\quad\qquad(step1)\\\
+\beta^{k+1} & := \beta^{k} + \alpha^k \nabla g(\beta) = y^k + \alpha^k(A x^{k+1} -b)  \qquad\,(step2)
+\end{align} \qquad\qquad(diml.2.5.8)
+$$
+
+> step1: 并行化求解多个子目标函数
+> 
+> step2: 汇总\\(x_{i}^{k+1}\\)（论证是否求平均可否？），更新对偶变量.
+
+
+<br>
+#### 增广拉格朗日乘子法
+
+Dual Ascent方法求解问题时，目标函数必须满足强凸函数的条件，限制过于严格。很多目标函数是不满足强凸函数条件的，为了满足这部分目标函数的极值求解问题，使用增广拉格朗日乘子方法（Augmented Lagrange）可以解决。
+
+> 增广拉格朗日乘子法的目标：**解决Dual Ascent方法对目标函数要求过于严格的问题。**
+
+为了放松假设条件，同时比较好优化...
+
 
 ### ADMM算法框架
 

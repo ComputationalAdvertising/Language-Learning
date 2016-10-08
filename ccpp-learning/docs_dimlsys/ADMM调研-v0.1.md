@@ -43,7 +43,7 @@ $$
 	
 $$
 \begin{align}
-x^{k+1} & := \arg \min_{x} \mathcal{L}(x,\beta^{k}) \qquad\qquad\qquad\qquad（x-最小化）\\
+x^{k+1} & := \arg \min_{x} \mathcal{L}(x,\beta^{k}) \qquad\qquad\qquad\qquad（x-最小化）\\\
 \beta^{k+1} & := \beta^{k} + \alpha^k \nabla g(\beta) = \beta^k + \alpha^k(A x^{k+1} -b) \quad (对偶变量更新，\alpha^k为步长)
 \end{align} \qquad(1.5)
 $$
@@ -84,7 +84,7 @@ $$
 
 $$
 \begin{align}
-x_{i}^{k+1} & := \arg \min_{x} L_i(x_i,\beta^{k}) \quad（多个x_i并行最小化步）\quad(1)\\
+x_{i}^{k+1} & := \arg \min_{x} L_i(x_i,\beta^{k}) \quad（多个x_i并行最小化步）\quad(1)\\\
 \beta^{k+1} & := \beta^{k} + \alpha^k \nabla g(\beta) = y^k + \alpha^k(A x^{k+1} -b) \quad (汇集整体的x,对偶变量更新) \quad(2)
 \end{align} \qquad\qquad(1.8)
 $$

@@ -1,33 +1,4 @@
-title: "第01章：深入浅出ML之Regression家族" 
-mathjax: true
-date: 2015-08-08 22:20.31
-categories: 
-	- 深入浅出机器学习
-tags: 
-	- Linear Regression
-	- Logistic Regression
-	- Lasso
-	- Ridge
-	- SoftMax Regression
----
-
-+ author: zhouyongsdzh@foxmail.com
-+ date: 2015-07-25
-+ weibo: [@周永_52ML](http://weibo.com/p/1005051707438033/home?)
-
----
-
-**内容列表**
-
-+ 符号定义
-+ 说明
-+ 回归分析介绍
-+ 线性回归模型
-+ 回归模型与正则化
-	+ L2－Ridge
-	+ L1－Lasso
-	+ Group Lasso
-+ 逻辑斯蒂回归
+ZZZhouy2008
 
 **符号定义**
 
