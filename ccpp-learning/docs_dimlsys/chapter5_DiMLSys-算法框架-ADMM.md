@@ -28,7 +28,7 @@ tags:
 
 分布式机器学习系统，一定要有链接硬件的软组织－分布式算法框架。这里要介绍的分布式算法框架是ADMM算法（Alternating Direction Multiplier Method，交叉方向乘子法）。
 
-ADMM算法结构天然地适用于分布式环境下具体任务的求解。
+ADMM算法结构天然地适用于分布式环境下具体任务的求解。在详细介绍ADMM算法框架之前，我们先用《约束优化问题一般的解决方案》作为引入，进而过渡到ADMM。
 
 ### 约束优化问题一般解决方案
 
@@ -140,7 +140,7 @@ $$
 <br>
 #### 增广拉格朗日乘子法
 
-Dual Ascent方法求解问题时，目标函数必须满足强凸函数的条件，限制过于严格。很多目标函数是不满足强凸函数条件的，为了满足这部分目标函数的极值求解问题，使用增广拉格朗日乘子方法（Augmented Lagrange）可以解决。
+Dual Ascent方法求解问题时，目标函数必须满足强凸函数的条件，限制过于严格。很多目标函数是不满足强凸函数条件的，为了满足这部分目标函数的极值求解问题，使用[增广拉格朗日乘子法（Augmented Lagrangians）](https://en.wikipedia.org/wiki/Augmented_Lagrangian_method)可以解决。
 
 > 增广拉格朗日乘子法的目标：**解决Dual Ascent方法对目标函数要求过于严格的问题。**
 
@@ -178,10 +178,39 @@ $$
 
 果然在2010年由Stephen Boyd大师等人提升了ADMM算法，可以解决上述的问题。为此它们长篇论述了ADMM算法的演化过程，参考论文：[Distributed Optimization and Statistical Learning via the Alternating Direction Method of Multipliers](http://web.stanford.edu/~boyd/papers/pdf/admm_distr_stats.pdf) 该文被《Foundations and Trends in Machine Learning》录入。
 
-> 说明：本章讲述的ADMM的相关，都是源于此文章。
+> 从文章题目上可以看出ADMM算法的适用场景：分布式优化 && 统计学习。
+> 
+> 分布式优化很好理解，因为数据量比较大以至于需要用多台机器来求解优化问题；统计学习就是能够通过计算充分统计量得到最优解的学习问题。 那么，**ADMM算法适用于大规模统计学习在分布式环境下的优化求解问题**。
+> 
+> 说明：本章讲述的ADMM的相关，大多源于此文章。
 
 ### ADMM算法框架
 
+交叉方向乘子法（Alternating Direction Method of Multipliers，简称ADMM）可以理解为是Augmented Lagrangians的变种。其为了整合Dual Ascent方法的可分解性和Augmented Lagrangians Multipliers优秀的收敛性质，进一步提出的新算法。
+
+从ADMM名字上可以看出，它Augmented Lagrangians上添加了交叉方向（Alternating Direction），然后通过交叉换方向来交替优化。ADMM优化算法框架的结构形式如下：
+
+$$
+\begin{align}
+& \min \quad f(x) + g(z) \\\
+& s.b. \quad Ax + Bz = C
+\end{align}  \qquad\qquad(diml.2.5.11)
+$$
+
+	
+> 其中\\(x \in R^n, z \in R^m; A \in R^{p \times n}, B \in R^{p \times m}, C \in R^p\\)。
+	
+增强Lagrange函数
+
+$$
+\mathcal{L}_{\rho}(x,z,\beta) = f(x) + g(z) + \underline{ \beta^T(Ax+Bz-C) + \frac{\rho}{2} {\Vert Ax+Bz-C \Vert}_2^2 }  \qquad(diml.2.5.12)
+$$
+	
+从上面形式确实可以看出，ADMM的思想就是想把primal变量、目标函数拆分，但是不再像dual ascent方法那样，将拆分开的\\(x_i\\)都看做是\\(\mathbf{x}\\)的一部分，后面融合的时候还需要融合在一起。而是最先开始就将拆开的变量分别看做是不同的变量\\(x\\)和\\(z\\)，约束条件也如此处理。这样的好处就是后面不需要一起融合\\(x\\)和\\(z\\)，保证了前面优化过程的可分解性。
+
+
+<br>
+#### 参数迭代形式
 
 
 

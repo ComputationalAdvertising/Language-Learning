@@ -136,7 +136,7 @@ ADMM从名字可以看到是在原来Method of Multipliers加了个Alternating D
 		
 $$
 \begin{align}
-& min \quad f(x) + g(z)  \\
+& min \quad f(x) + g(z)  \\\
 & s.b \quad Ax + B z = C
 \end{align}  \qquad (2.1)
 $$
@@ -163,8 +163,8 @@ $$
 >
 $$
 	\begin{align}
-	\beta^T(Ax+Bz-C) + \frac{\rho}{2} {\Vert Ax+Bz-C \Vert}_2^2 & = \beta^T \cdot r + \frac{\rho}{2} {\Vert r \Vert}_2^2 \\
-	& = \frac{\rho}{2} {\left \Vert  r + \frac{1}{\rho} \beta \right \Vert}_2^2 - \frac{1}{2\rho} {\Vert \beta \Vert}_2^2 \\
+	\beta^T(Ax+Bz-C) + \frac{\rho}{2} {\Vert Ax+Bz-C \Vert}_2^2 & = \beta^T \cdot r + \frac{\rho}{2} {\Vert r \Vert}_2^2 \\\
+	& = \frac{\rho}{2} {\left \Vert  r + \frac{1}{\rho} \beta \right \Vert}_2^2 - \frac{1}{2\rho} {\Vert \beta \Vert}_2^2 \\\
 	& = \frac{\rho}{2} {\Vert r + \mu \Vert}_2^2 - \frac{\rho}{2} {\Vert \mu \Vert}_2^2
 	\end{align}
 	$$	
@@ -173,8 +173,8 @@ ADMM迭代公式转化为：
 	
 $$
 \begin{cases}
-	x^{k+1} = \arg \min_{x} \left( f(x) + \frac{\rho}{2} {\Vert Ax^k + Bz^k - C + \mu^k \Vert}_2^2 \right) \qquad (1) \\
-	z^{k+1} = \arg \min_{z} \left( g(z) + \frac{\rho}{2} {\Vert Ax^{k+1} + Bz^k - C + \mu^k \Vert}_2^2 \right) \qquad(2)\\
+	x^{k+1} = \arg \min_{x} \left( f(x) + \frac{\rho}{2} {\Vert Ax^k + Bz^k - C + \mu^k \Vert}_2^2 \right) \qquad (1) \\\
+	z^{k+1} = \arg \min_{z} \left( g(z) + \frac{\rho}{2} {\Vert Ax^{k+1} + Bz^k - C + \mu^k \Vert}_2^2 \right) \qquad(2)\\\
 	\mu^{k+1} = \mu^k + Ax^{k+1} + Bz^{k+1} - C \qquad\qquad\qquad(3)
 	\end{cases} \qquad(2.4)
 	$$
@@ -200,10 +200,10 @@ $$
 	$$
 	\begin{align}
 	\frac{\partial{ \left( f(x) + \frac{\rho}{2} {\Vert Ax - v \Vert}_2^2 \right) }} {\partial{x}} 
-	& = \frac{\partial{ \left( \frac{1}{2} x^T P x + q^T x + r + \frac{\rho}{2} {\Vert Ax - v \Vert}_2^2 \right) }} {\partial{x}} \\
-	& = \frac{\partial{(\frac{1}{2} x^T P x)}}{\partial{x}} + \frac{\partial{(q^T x + r)}}{\partial{x}} + \underline{ \frac{\rho}{2} \cdot \frac{(Ax)^T(Ax) - 2(Ax)^Tv + {\Vert v \Vert}_2^2} {\partial{x}} } \\
-	& = Px + (q^T)^T + \underline { \frac{\rho}{2} \left( 2A^TAx - 2A^Tv\right)} \\
-	& = Px + q + \underline{ \rho A^TAx - \rho A^T v } \\
+	& = \frac{\partial{ \left( \frac{1}{2} x^T P x + q^T x + r + \frac{\rho}{2} {\Vert Ax - v \Vert}_2^2 \right) }} {\partial{x}} \\\
+	& = \frac{\partial{(\frac{1}{2} x^T P x)}}{\partial{x}} + \frac{\partial{(q^T x + r)}}{\partial{x}} + \underline{ \frac{\rho}{2} \cdot \frac{(Ax)^T(Ax) - 2(Ax)^Tv + {\Vert v \Vert}_2z^2} {\partial{x}} } \\\
+	& = Px + (q^T)^T + \underline { \frac{\rho}{2} \left( 2A^TAx - 2A^Tv\right)} \\\
+	& = Px + q + \underline{ \rho A^TAx - \rho A^T v } \\\
 	& = (P + \rho A^TA)x + (q - \rho A^T v) = 0
 	\end{align}  \qquad(2.5)
 	$$
@@ -227,9 +227,9 @@ $$
 	$$
 	\begin{align}
 	\frac{\partial{ \left( f(x) + \frac{\rho}{2} {\Vert Ax - v \Vert}_2^2 \right) }} {\partial{x}} 
-	& = \frac{\partial{\left( \lambda{\Vert x \Vert}_1 + \frac{\rho}{2} {\Vert Ax - v \Vert}_2^2\right)}} {\partial{x}} \\
-	& = \frac{\partial{(\lambda {\Vert x \Vert}_1)}} {\partial{x}} + \underline{ \frac{\rho}{2} \cdot \frac{(Ax)^T(Ax) - 2(Ax)^Tv + {\Vert v \Vert}_2^2} {\partial{x}} } \\
-	& = \lambda I + \underline{ \rho A^TAx - \rho A^T v } \\
+	& = \frac{\partial{\left( \lambda{\Vert x \Vert}_1 + \frac{\rho}{2} {\Vert Ax - v \Vert}_2^2\right)}} {\partial{x}} \\\
+	& = \frac{\partial{(\lambda {\Vert x \Vert}_1)}} {\partial{x}} + \underline{ \frac{\rho}{2} \cdot \frac{(Ax)^T(Ax) - 2(Ax)^Tv + {\Vert v \Vert}_2^2} {\partial{x}} } \\\
+	& = \lambda I + \underline{ \rho A^TAx - \rho A^T v } \\\
 	& = \rho A^TAx + (\lambda I - \rho A^T v) = 0
 	\end{align} \qquad(2.7)
 	$$
@@ -245,9 +245,9 @@ $$
 	$$
 	\begin{align}
 	\frac{\partial{ \left( f(x) + \frac{\rho}{2} {\Vert Ax - v \Vert}_2^2 \right) }} {\partial{x}} 
-	& = \frac{\partial{\left( \lambda{\Vert x \Vert}_1 + \frac{\rho}{2} {\Vert Ax - v \Vert}_2^2\right)}} {\partial{x}} \\
-	& = \frac{\partial{(\lambda {\Vert x \Vert}_1)}} {\partial{x}} + \underline{ \frac{\rho}{2} \cdot \frac{(Ax)^T(Ax) - 2(Ax)^Tv + {\Vert v \Vert}_2^2} {\partial{x}} } \\
-	& = -\lambda I + \underline{ \rho A^TAx - \rho A^T v } \\
+	& = \frac{\partial{\left( \lambda{\Vert x \Vert}_1 + \frac{\rho}{2} {\Vert Ax - v \Vert}_2^2\right)}} {\partial{x}} \\\
+	& = \frac{\partial{(\lambda {\Vert x \Vert}_1)}} {\partial{x}} + \underline{ \frac{\rho}{2} \cdot \frac{(Ax)^T(Ax) - 2(Ax)^Tv + {\Vert v \Vert}_2^2} {\partial{x}} } \\\
+	& = -\lambda I + \underline{ \rho A^TAx - \rho A^T v } \\\
 	& = \rho A^TAx - (\lambda I + \rho A^T v) = 0
 	\end{align} \qquad(2.8)
 	$$
@@ -265,8 +265,8 @@ $$
 		$$
 		x^{*} = S_{\frac{\lambda}{\rho}}(v) \rightarrow S_{a}(v) = (v-a)_{+} - (-v-a)_{+} = 
 		\begin{cases}
-		v-a, & \quad if \quad v \ge a \\
-		\quad 0, &\quad if \quad -a < v < a \\
+		v-a, & \quad if \quad v \ge a \\\
+		\quad 0, &\quad if \quad -a < v < a \\\
 		v+a, & \quad if \quad v \le -a
 		\end{cases} \qquad(2.9)
 		$$
@@ -344,9 +344,9 @@ $$
 
 	$$
 	\begin{align}
-	w^{k+1} & = (P + \rho A^TA)^{-1} \cdot (\rho A^T v - q) \\
-	& = (X^T X + \rho I)^{-1} \cdot (\rho v + X^T Y) \\
-	& = (X^T X + \rho I)^{-1} \cdot \left(X^T Y + \rho(\theta^k - \frac{1}{\rho} \beta^k) \right) \\
+	w^{k+1} & = (P + \rho A^TA)^{-1} \cdot (\rho A^T v - q) \\\
+	& = (X^T X + \rho I)^{-1} \cdot (\rho v + X^T Y) \\\
+	& = (X^T X + \rho I)^{-1} \cdot \left(X^T Y + \rho(\theta^k - \frac{1}{\rho} \beta^k) \right) \\\
 	& = (X^T X + \rho I)^{-1} \cdot (X^T Y + \rho \theta^k - \beta^k)
 	\end{align}  \qquad(3.5)
 	$$
@@ -364,8 +364,8 @@ $$
 	$$
 	\theta^{k+1} = S_{\frac{\lambda}{\rho}}(w^{k+1}+\frac{1}{\rho}\beta^k) = 
 	\begin{cases}
-		v-a, & \quad if \quad v \ge a \\
-		\quad 0, &\quad if \quad -a < v < a \\
+		v-a, & \quad if \quad v \ge a \\\
+		\quad 0, &\quad if \quad -a < v < a \\\
 		v+a, & \quad if \quad v \le -a
 		\end{cases} \qquad(3.6)
 	$$
@@ -383,8 +383,8 @@ $$
 
 $$
 \begin{align}
-w_l^{k+1} &= \arg \min_{w} \left( f_l(w) + \frac{\rho}{2} {\Vert w + \theta^k + \mu_l^k \Vert}_2^2 \right) \qquad (1) \\
-z^{k+1} &= \arg \min_{\theta} \left( g_l(\theta) + \frac{\rho}{2} {\Vert \theta - \overline{w^{k+1}} - \overline{\mu^k} \Vert}_2^2 \right) \quad(2)\\
+w_l^{k+1} &= \arg \min_{w} \left( f_l(w) + \frac{\rho}{2} {\Vert w + \theta^k + \mu_l^k \Vert}_2^2 \right) \qquad (1) \\\
+z^{k+1} &= \arg \min_{\theta} \left( g_l(\theta) + \frac{\rho}{2} {\Vert \theta - \overline{w^{k+1}} - \overline{\mu^k} \Vert}_2^2 \right) \quad(2)\\\
 \mu_l^{k+1} &= \mu_l^k + w_l^{k+1} - \theta^{k+1} \qquad\quad\qquad\qquad\qquad(3)
 \end{align} \qquad(3.8)
 $$
