@@ -1,4 +1,4 @@
-title: "第5章：DidimlSys-算法框架-ADMM" 
+title: "第5章：DiMLSys-算法框架-ADMM" 
 mathjax: true
 date: 2015-01-05 18:30:31
 categories: 
