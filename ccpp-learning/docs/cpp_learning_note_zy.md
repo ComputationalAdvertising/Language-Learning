@@ -3,18 +3,28 @@
 + author: zhouyongsdzh@foxmail.com
 + date: 20160829
 
-### List
+### 目录
 
-+ 基础知识 (按照字母顺序)
-	+ namespace 使用 
-+ C++专题
-	+ string专题
-	+ io专题
-	+ C++11新特性
- 
-+ 项目构建
+--
+#### 基础知识
++ namespace
++ io系统
+
+#### C++面向对象
++ class与继承
++ virtual
++ 
+
+#### 数据结构与算法
++ string
+
+### C++11新特性
++ std::functional
++ std::bind
++ lambda函数表达式
 
 
+---
 ### 基础知识
 
 #### namespace 使用
@@ -113,10 +123,110 @@ int main(int argc, char* argv[])
 ```
 
 
-## C++专题
+---
+## C++11新特性
 
-### C++11新特性
+--
+### std::functional
 
-#### std::functional
+--
+### std::bind
 
-#### std::bind
+--
+### [匿名函数（lambda表达式）](http://blog.csdn.net/augusdi/article/details/11773943)
+
+Lambda表达式具体形式：
+
+**```[capture](paramters) -> return-type {body}```**
+
+如果没有参数，空的圆括号```()```可以省略。如果函数体只有一条return语句或者返回类型为void时，返回值也可以忽略。形如：
+
+**```[capture](parameters) {body}```**
+
+几个Lambda函数的例子：
+
+```
+[](int x, int y) { return x+y; }			// 隐式返回类型
+[](int& x) { ++x; }			// 没有return语句，则lambda函数的返回值类型是'void'
+[]() { ++global_x; }		// 没有参数，仅访问某个全局变量
+```
+
+可以像下面显示指定返回类型：
+
+```[](int x, int y) -> int { int z=x+y; return z; }```
+
+什么也不返回的Lambda函数可以省略返回类型，而不需要使用```-> void```形式。
+
+**Lambda函数可以引用在它之外声明的变量**, 这些变量的集合叫做一个**闭包**。闭包被定义在Lambda表达式声明中的方括号```[]```内。这个机制允许这些变量被按值或按引用捕获。示例：
+
+```
+[]			// 未定义变量。试图在Lambda内使用任何外部变量都是错误的
+[x, &y]		// x按值捕获，y按引用捕获
+[&]			// 用到的任何外部变量都隐式按引用捕获
+[=]			// 用到的任何外部变量都隐式按值捕获
+[&, x]		// x显示地按值捕获。其它变量按引用捕获
+[=, &z]		// z按引用捕获，其它变量按值捕获
+```
+
+示例说明Lambda表达式用法:
+
+```
+std::vector<int> list;
+int total = 0;
+for (int i = 0; i < 5; ++i) list.push_back(i);
+std::for_each(begin(list), end(list), [&total](int x) { 
+	total += x;
+});			// 计算list中所有元素的总和。
+```
+变量total被存为lambda函数闭包的一部分。因为total是栈变量（局部变量）total的引用，所以可以改变它的值。
+
+Lambda函数是一个依赖于实现的函数对象类型，这个类型的名字只有编译器知道。**如果用户想把Lambda函数做一个参数来传递，那么行参的类型必须是模版类型或者必须能创建一个```std::function```类似的对象去捕获lambda函数**。使用auto关键字可以帮助存储lambda函数。
+
+```
+auto my_lambda_func = [&](int x) { /* ... */ };
+auto my_onheap_lambda_func = new auto([=](int x) { /* ... */ });
+```
+
+下面例子把匿名函数存储在变量、数组或vector中，并把它们当作命名参数来传递：
+
+```
+#include <functional>
+#include <vector>
+#include <iostream>
+using namespace std;
+ 
+double eval(std::function<double(double)> f, double x = 2.0) {
+	return f(x);
+}
+
+int main(int argc, char* argv[])
+{
+	// use std::function capture lambda function
+	std::function<double(double)>	f0		= [](double x) { return 1; };
+	// use auto keywords save lambda function
+	auto							f1		= [](double x) { return x; };
+	decltype(f0)					fa[3]	= {f0, f1, [](double x) {return x*x;}};
+	std::vector<decltype(f0)>		fv		= {f0, f1};
+	fv.push_back					([](double x) {return x*x; });
+
+	std::cout << "test-0:\n";
+	for (auto i = 0; i < fv.size(); ++i)	std::cout << fv[i](2.0) << "\n";
+	std::cout << "test-1:\n";
+	for (auto i = 0; i < 3; ++i)			std::cout << fa[i](2.0)	<< "\n";
+	std::cout << "test-2:\n";
+	for (auto &f: fv)						std::cout << f(2.0)	<< "\n";
+	std::cout << "test-3:\n";
+	for (auto &f: fa)						std::cout << f(2.0)	<< "\n";
+	std::cout << eval(f0) << "\n";
+	std::cout << eval(f1) << std::endl;
+	return 0;
+
+}
+```
+
+
+
+
+
+
+
