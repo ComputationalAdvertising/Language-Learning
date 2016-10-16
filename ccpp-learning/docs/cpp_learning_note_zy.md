@@ -10,18 +10,23 @@
 + namespace
 + io系统
 
-#### C++面向对象
-+ class与继承
-+ virtual
-+ 
 
 #### 数据结构与算法
 + string
 
-### C++11新特性
+#### C++特性
++ class与继承
++ virtual
++ 智能指针
+
+#### C++11新特性
 + std::functional
 + std::bind
-+ lambda函数表达式
++ 匿名函数（lambda表达式）
+
+#### 那些坑儿
+
++ **```undefined reference to `...` ```**
 
 
 ---
@@ -122,8 +127,17 @@ int main(int argc, char* argv[])
 
 ```
 
+--
+## C++特性
 
----
+--
+### 智能指针
+
++ ```auto_ptr```
++ ```shared_ptr```
+
+
+--
 ## C++11新特性
 
 --
@@ -224,7 +238,16 @@ int main(int argc, char* argv[])
 }
 ```
 
+## 那些坑儿
 
+--
+### [```undefined reference to `...` ```](http://blog.csdn.net/jfkidear/article/details/8276203)
+
+异常示例：```undefined reference to `dmlc::Config::Config(std::istream&, bool)' ```
+
+主要原因是```*.cc```程序没有**链接**dmlc库函数，需要在```*.cc```对应```CMakeLists.txt```文件添加 **链接库函数代码，即```target_link_libraries(${exec_name} dmlc)```**，相当于在g++上添加了参数```-ldmlc```
+
+> 类似的问题： ```undefined reference to 'pthread_create'``` 需要添加```-lpthread```
 
 
 
