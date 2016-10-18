@@ -9,14 +9,18 @@
 #### 基础知识
 + namespace
 + io系统
++ struct
 
 
 #### 数据结构与算法
 + string
++ vector
++ sort
++ math
 
 #### C++特性
 + class与继承
-+ virtual
++ virtual虚函数
 + 智能指针
 
 #### C++11新特性
@@ -131,9 +135,73 @@ int main(int argc, char* argv[])
 ## C++特性
 
 --
-### 智能指针
+### [智能指针](http://blog.csdn.net/xt_xiaotian/article/details/5714477)
 
-+ ```auto_ptr```
+为什么要存在智能指针？为什么要使用智能指针？博客[智能指针的作用与原理](http://blog.csdn.net/chen825919148/article/details/8155411)已经讲解的很清楚。
+
+在C++中创建一个对象时（堆对象），需要保证**对象一定会被释放，但只能释放一次，并且释放后指向该对象的指针应该马上归0。**
+
+> 一定要有delete对象，但不可重复delete（会释放别人的空间），delete后对应的指针如果不归0（或null），该指针可能会操作其对应的空间，侵犯别人的地盘（指针霸气侧漏）。
+> 
+> 以上程序员操作不当，都会成为导致内存泄漏的主要原因。
+
+我们需要一个类似Java能自动回收内存的机制。因此智能指针诞生，**智能指针是借鉴了Java内存回收机制（引用计数器机制）**，从而不用由程序员执行delete/free操作了。
+
+> [知乎上对智能指针的回答](http://www.zhihu.com/question/20368881) 有几个比较精彩：
+
+**智能指针的作用**
+
+1. 防止用户忘记调用delete；
+2. 异常安全（在try/catch代码段里，即使写入了delete，也可能发生异常）；
+3. **把value语义转化为reference语义**；
+
+> C++和Java有一处很大的区别在于**语义不同**，java代码段：
+> 
+```
+Animal a = new Animal(); Animal b = a;
+```
+> 这里其实只生成了一个对象，a和b仅仅是把持对象的引用而已。但在C++中不是这样：
+> ```Animal a; 	Animal b；``` 确实是生成了两个对象。
+> 
+> Java中往容器中放对象，实际放入的是引用，不是真正的对象。而在C++的vector中push_back采用的是值拷贝。如果像实现Java中的引用语义，此时可使用智能指针。
+
+ 
+**智能指针与普通指针的区别**
+
+智能指针实际上是对普通指针加了一层封装机制，这层封装机制的目的是为了使得智能指针可以方便的管理一个对象的生命周期。
+> 在智能指针中，一个对象什么时候在什么条件下被析构（reset）或者删除由智能指针本身决定，用户不需要管理。
+
+另外一个区别在于，智能指针本质上是一个对象，行为表现的像一个指针。
+
+下面先介绍一些智能指针的种类、区别与联系。
+
+#### [```auto_ptr```](http://www.cplusplus.com/reference/memory/auto_ptr/)
+
+首先要说明的是，在C++11中，已经废除了```template <class X> class auto_ptr```这样一个类模型，取而代之的是```std::unique_ptr```：与```auto_ptr```功能类似，但是提升了安全性，添加了deleter功能，并且支持数组。
+
+> 如果在C++11中使用```std::auto_ptr```会提示下面类似的warning：
+> 
+```
+warning: ‘template<class> class std::auto_ptr’ is deprecated [-Wdeprecated
+-declarations]  std::auto_ptr<Base> auto_p(Base);       ^In file included from /usr/include/c++/5/memory:81:0,/usr/include/c++/5/bits/unique_ptr.h:49:28: note: declared here   template<typename> class auto_ptr;
+```
+
+```auto_ptr```提供的成员函数主要有：get(), operator* , operator-> , operator= , release(), reset().
+
+示例：
+
+```
+class Simple {
+	public:
+		Simple(int param=0) { cout << "Simple Created. " << endl; }
+		~Simple() { cout << "~Simple. " << endl; }
+		void PrintSomeThing() { }
+}
+```
+
+http://blog.csdn.net/xt_xiaotian/article/details/5714477
+
+
 + ```shared_ptr```
 
 
