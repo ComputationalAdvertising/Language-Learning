@@ -1,4 +1,4 @@
-## 点击率预估－模型篇
+## 点击率预估－模型篇-FTRL
 
 + author: zhouyongsdzh@foxmail.com
 + date: 20160327
@@ -15,11 +15,11 @@
 
 + 在线梯度下降（Online Gradient Descent，OGD）
 
-	可以有非常好的预估准确性，并且占用较少的资源。但是它不能得到有效的稀疏模型（非零参数），就是说添加L1惩罚项也不能产生严格意义上的稀疏解（参数为0）。
+	可以有非常好的预估准确性，并且占用较少的资源。但是它不能得到有效的稀疏模型（非零参数），就是说添加L1惩罚项也不能产生严格意义上的稀疏解（会使参数接近于0，而不是0）。
 
 + Truncated Gradient and FOBOS		
 
-	参数\\(w_j\\)设定阈值，当参数小雨阈值时置为0，如此得到稀疏解。
+	参数\\(w_j\\)设定阈值，当参数小雨阈值时置为0，可得稀疏解。
 	
 + 正则化对偶平均（Regularized Dual Averaging，RDA）
 	
@@ -31,7 +31,7 @@
 
 
 
-如果用FTRL-Proximal算法训练LR模型：
+如果用FTRL-Proximal算法训练LR模型，步骤如下：
 
 + 首先，预测实例\\(\mathbf{x}^{(i)} \in R^n\\)的label（在给定模型参数\\(\mathbf{w}^{(i)}\\)）。公式为\\(p^{(i)} = \sigma(\mathbf{w}^{(i)} \cdot \mathbf{x}^{(i)}), \; \sigma(a) = \frac{1}{1 + \exp(-a)}\\).
 
@@ -73,7 +73,7 @@
 	w_{i+1, j} = 
 	\left \{
 	\begin{array}{ll}
-	0, & \text{if} \; |z_{i,j}| \le \lambda_1 \\
+	0, & \text{if} \; |z_{i,j}| \le \lambda_1 \\\
 	-\eta_i \left(z_{i,j} - \text{sgn}(z_{i,j}) \lambda_1 \right) & \text{otherwise}.
 	\end{array}
 	\right. 	\qquad(6)
@@ -92,28 +92,28 @@
 	
 + FTRL-Proximal 伪代码
 
-	\\(\{ \\
-	\quad \text{Per-Coordinate FTRL-Proximal with L}_1 \text{ and L}_2 \text{ Regularization for Logistic Regression. }  \\
-	\quad \text{// 支持} L_1 \text{与} L_2  \text{正则项的FTRL-Proximal算法. Per-Coordinate学习率为公式(7). } \\
-	\quad \text{Input: parameters } \alpha, \beta, \lambda_1, \lambda_2. \qquad //  参数 \alpha, \beta 用于\text{Per-Coordinate}计算学习率 \\
-	\quad (\text{对于任意的}\; j \in \{1, ..., d\}), 初始化z_i = 0 和n_i=0. \qquad // 总共d个值. \\
-	\quad \mathbf{\text{for}} \; t=1 \; to \; T; do \\
-	\quad \qquad 接受特征向量\mathbf{x}_t \; and 让 I = \{i| x_i \neq 0 \}. \quad //取非0特征index集合. \\
-	\quad \qquad \text{For i} \in I, 计算  \\
+	\\(\{ \\\
+	\quad \text{Per-Coordinate FTRL-Proximal with L}_1 \text{ and L}_2 \text{ Regularization for Logistic Regression. }  \\\
+	\quad \text{// 支持} L_1 \text{与} L_2  \text{正则项的FTRL-Proximal算法. Per-Coordinate学习率为公式(7). } \\\
+	\quad \text{Input: parameters } \alpha, \beta, \lambda_1, \lambda_2. \qquad //  参数 \alpha, \beta 用于\text{Per-Coordinate}计算学习率 \\\
+	\quad (\text{对于任意的}\; j \in \{1, ..., d\}), 初始化z_i = 0 和n_i=0. \qquad // 总共d个值. \\\
+	\quad \mathbf{\text{for}} \; t=1 \; to \; T; do \\\
+	\quad \qquad 接受特征向量\mathbf{x}_t \; and 让 I = \{i| x_i \neq 0 \}. \quad //取非0特征index集合. \\\
+	\quad \qquad \text{For i} \in I, 计算  \\\
 	\quad \qquad\qquad w_{t, i} = 
 	\quad \left \{
 	\quad \begin{array}{ll}
-	0, & \text{if} \; |z_{i,j}| \le \lambda_1 \\
+	0, & \text{if} \; |z_{i,j}| \le \lambda_1 \\\
 	-\left( \frac{\beta + \sqrt{n_i}}{\alpha} + \lambda_2 \right)^{-1} \left(z_{i} - \text{sgn}(z_{i}) \lambda_1 \right) & \text{otherwise}.
 	\end{array}
-	\right. \\
-	\quad \qquad 预测 p_t = \sigma(\mathbf{x}_t \cdot \mathbf{w}) 使用w_{t,i}计算，Predict函数。\\
-	\quad \qquad 观测样本 y_t \in \{0, 1\} \qquad //下面更新参数，\text{Update(p, y, x)}函数 \\
-	\quad \qquad \text{for all } \; i \in I; do \\
-	\quad \qquad\qquad g_i = (p_t - y_t) x_i	\quad \qquad // 第i维特征的梯度值（libsvm格式数据，x_i多为1.）\\
-	\quad \qquad\qquad \sigma_i = \frac{1}{\alpha} \left(\sqrt{n_i + g_i^2} - \sqrt{n_i} \right) \qquad // n_i表示第i维梯度（前t-1次）的平方累加和 \\
-	\quad \qquad\qquad z_i \leftarrow z_{i-1} + g_i - \sigma_i w_{t,i} \qquad // 更新\text{FTRL}目标函数的梯度公式  \\
-	\quad \qquad\qquad n_i \leftarrow n_i + g_i^2  \qquad // 更新第i维梯度平方累加和值。\\
+	\right. \\\
+	\quad \qquad 预测 p_t = \sigma(\mathbf{x}_t \cdot \mathbf{w}) 使用w_{t,i}计算，Predict函数。\\\
+	\quad \qquad 观测样本 y_t \in \{0, 1\} \qquad //下面更新参数，\text{Update(p, y, x)}函数 \\\
+	\quad \qquad \text{for all } \; i \in I; do \\\
+	\quad \qquad\qquad g_i = (p_t - y_t) x_i	\quad \qquad // 第i维特征的梯度值（libsvm格式数据，x_i多为1.）\\\
+	\quad \qquad\qquad \sigma_i = \frac{1}{\alpha} \left(\sqrt{n_i + g_i^2} - \sqrt{n_i} \right) \qquad // n_i表示第i维梯度（前t-1次）的平方累加和 \\\
+	\quad \qquad\qquad z_i \leftarrow z_{i-1} + g_i - \sigma_i w_{t,i} \qquad // 更新\text{FTRL}目标函数的梯度公式  \\\
+	\quad \qquad\qquad n_i \leftarrow n_i + g_i^2  \qquad // 更新第i维梯度平方累加和值。\\\
 	\}
 	\\)
 
@@ -144,7 +144,7 @@
 	w_i = 
 	\left \{
 	\begin{array}{ll}
-	1 & \text{event i is in clicked query} \\
+	1 & \text{event i is in clicked query} \\\
 	\frac{1}{r} & \text{event i is in a query with no clicks.}
 	\end{array}
 	\right.

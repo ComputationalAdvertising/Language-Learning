@@ -1,0 +1,10 @@
+[INFO] training beginning ...
+[INFO] training end.
+[INFO] training time: 0:00:00.482552
+
+[INFO] testing beginning ...
+[INFO] testing end.
+[INFO]testing time: 0:00:00.245881
+
+[INFO] logloss in testing: 0.904412
+[INFO] done!!!

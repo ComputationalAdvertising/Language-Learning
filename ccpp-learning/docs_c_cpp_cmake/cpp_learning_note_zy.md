@@ -173,7 +173,13 @@ Animal a = new Animal(); Animal b = a;
 
 另外一个区别在于，智能指针本质上是一个对象，行为表现的像一个指针。
 
-下面先介绍一些智能指针的种类、区别与联系。
+下面先介绍智能指针的种类、区别与联系。
+
+示例类：
+
+```
+class Base {	public:		Base(int param = 0) {			number_ = param;			std::cout << "Create Base Object. number_: " << number_ << std::endl;		}		~Base() { std::cout << "~Base: " << number_ << std::endl; }		void PrintInfo() { std::cout << "PrintInfo: " << info.c_str() << std::endl; }		std::string info;		int number_;};class Derived : public Base {	public:		Derived(int param) { std::cout << "Create Derived" << std::endl; }		~Derived() { std::cout << "~Derived" << std::endl; }};
+```
 
 #### [```auto_ptr```](http://www.cplusplus.com/reference/memory/auto_ptr/)
 
@@ -191,18 +197,20 @@ warning: ‘template<class> class std::auto_ptr’ is deprecated [-Wdeprecated
 示例：
 
 ```
-class Simple {
-	public:
-		Simple(int param=0) { cout << "Simple Created. " << endl; }
-		~Simple() { cout << "~Simple. " << endl; }
-		void PrintSomeThing() { }
-}
+int main(int argc, char * agrv[]) {	/* std::auto_ptr */	std::auto_ptr<Base> my_auto_ptr(new Base(11));	// create object. output: 11	if (my_auto_ptr.get()) {					// judge smart_ptr is null		my_auto_ptr->PrintInfo();				// use operator-> to call function of ptr-object		my_auto_ptr->info = "hello auto_ptr";	// use operator= to assign value		my_auto_ptr->PrintInfo();		(*my_auto_ptr).info += "!!!!!";			// use operator* return inner object, then use '.' to call func		my_auto_ptr->PrintInfo();	} else {		std::cout << "my_auto_ptr is null" << std::endl;	}	// [expirment] auto_ptr: object copy	if (my_auto_ptr.get()) {		std::auto_ptr<Base> my_auto_ptr2(new Base(22));		my_auto_ptr2->info = "this world";		my_auto_ptr2 = my_auto_ptr;				// copy. but loss manager right.		my_auto_ptr2->PrintInfo();		//my_auto_ptr->PrintInfo();				// error code. (core dump)	}	// [expirment] auto_ptr: reset(), release();	std::auto_ptr<Base> my_auto_ptr3(new Base(33));	if (my_auto_ptr3.get()) {		//my_auto_ptr3.release();					// error code. load to memory dump.		/*		Base * tmp_ptr = my_auto_ptr3.release();	// right code.		delete tmp_ptr;		*/		my_auto_ptr3.reset();				// reset. enable to free memory	}	// std::pointer_ptr	return 0;}
 ```
+**std::auto_ptr几点说明：**
 
-http://blog.csdn.net/xt_xiaotian/article/details/5714477
+1. auto_ptr对象赋值，会失去内存管理所有权，使得```my_auto_ptr```悬空，最后使用时会导致程序崩溃。因此，**使用```std::auto_ptr```时，尽量不要使用````operator=```操作符**，如果使用了，不要再使用先前对象。
+2. 使用```std::auto_ptr release()```函数时，会发现创建出来的对象没有被析构，导致内存泄漏。这是因为```release```函数不会释放对象，仅仅归还所有权。释放对象可使用```reset()```函数。
+3. ```std::auto_ptr```不能当作参数传递，同时其管理的对象也不能放入```std::vector```等容器中，因为```operator=```问题。
+
+参考链接：http://blog.csdn.net/xt_xiaotian/article/details/5714477
+
+#### [```unique_ptr```](http://www.cplusplus.com/reference/memory/unique_ptr/?kw=unique_ptr)
 
 
-+ ```shared_ptr```
+#### [```shared_ptr```](http://www.cplusplus.com/reference/memory/shared_ptr/?kw=shared_ptr)
 
 
 --
