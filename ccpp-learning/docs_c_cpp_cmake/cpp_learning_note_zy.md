@@ -205,10 +205,30 @@ int main(int argc, char * agrv[]) {	/* std::auto_ptr */	std::auto_ptr<Base> my
 2. 使用```std::auto_ptr release()```函数时，会发现创建出来的对象没有被析构，导致内存泄漏。这是因为```release```函数不会释放对象，仅仅归还所有权。释放对象可使用```reset()```函数。
 3. ```std::auto_ptr```不能当作参数传递，同时其管理的对象也不能放入```std::vector```等容器中，因为```operator=```问题。
 
-参考链接：http://blog.csdn.net/xt_xiaotian/article/details/5714477
++ 参考链接：http://blog.csdn.net/xt_xiaotian/article/details/5714477
+
 
 #### [```unique_ptr```](http://www.cplusplus.com/reference/memory/unique_ptr/?kw=unique_ptr)
 
+上面的```std::auto_ptr```在复制构造或者```operator=```时，原先的对象就报废了，因为所有权转移到新对象去了，是程序崩溃的隐患。为了避免此现象发生，```std::unique_ptr```很好的解决了这个问题，其**不提供智能指针的```=```操作，必须通过间接或显示的交出所有权（```std::move```, since c++11）**。
+
+```
+std::unique_ptr<Base> fetch_unique_ptr() {	std::unique_ptr<Base> ptr(new Base(55));	//ptr->info = "construct unique_ptr.";	return ptr;};
+
+int main(int argc, char * agrv[]) {
+	/* std::unqiue_ptr */	std::unique_ptr<Base> my_unique_ptr(new Base(44));	my_unique_ptr->info = "hello unique_ptr";	my_unique_ptr->PrintInfo();			// "info.c_str(), 44"	// [expirment] unique_ptr not support 'operator='	/*	std::unique_ptr<Base> my_unique_ptr2 = my_unique_ptr;	// error.	std::unique_ptr<Base> my_unique_ptr3(my_unique_ptr);	// error.	*/	std::unique_ptr<Base> my_unique_ptr3 = std::move(my_unique_ptr);	// ok	my_unique_ptr3->PrintInfo();		// "info.c_str(), 44"		std::unique_ptr<Base> my_unique_ptr4 = fetch_unique_ptr();	// ok. move construct.	my_unique_ptr4->PrintInfo();		// "info: construct unique_ptr, number: 55"	// [expirment] unique_ptr support vector element	std::unique_ptr<Base> my_unique_ptr5(new Base(66));	(*my_unique_ptr5).info = "hello vector!";	std::vector< std::unique_ptr<Base> > vec;	vec.push_back(std::move(my_unique_ptr5));	vec.at(0)->PrintInfo();	vec[0]->PrintInfo();
+	// my_unique_ptr5->PrintInfo();		// error	return 0;}
+```
+
+**std::unique_ptr几点说明：**
+
+1. 无法进行复制构造和赋值操作：意味着无法得到指向同一个对象的两个unique_ptr. 但提供了移动构造赋值和显示赋值功能。
+2. 为动态申请的内存提供异常安全；可以将动态申请内存的所有权传递给某个函数；从某个函数返回动态申请内存的所有权；
+3. 可以作为容器元素。
+
+```std::auto_ptr```和```std::unique_ptr```都是某一块内存独享所有权的智能指针。实际应用中会出现**某一块内存允许多个智能指针共享**，该当如何？下面的```std::shared_ptr```可以满足这个场景。
+
+> 分布式机器学习评估模型指标，即计算auc, logloss等指标时，可以使用```std::shared_ptr```
 
 #### [```shared_ptr```](http://www.cplusplus.com/reference/memory/shared_ptr/?kw=shared_ptr)
 
