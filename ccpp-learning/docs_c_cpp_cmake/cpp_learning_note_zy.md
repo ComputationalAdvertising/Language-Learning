@@ -10,6 +10,7 @@
 + namespace
 + io系统
 + struct
++ random
 
 
 #### 数据结构与算法
@@ -129,6 +130,22 @@ int main(int argc, char* argv[])
        	return 0;
 }
 
+```
+
+### io系统
+
+### struct结构体
+
+### random随机数
+
+http://blog.csdn.net/x356982611/article/details/50909142
+
+C++11引入的伪随机数发生器，随机数抽象成生成器和分布器两部分。生成器用来产生随机数，分布器用来生成特征分布的随机数。示例：
+
+```
+std::random_device rd;		// 生成一个随机数作为种子
+std::uniform_int_distribution<int> uni_dist(0, 99999);  // 指定范围的随机数发生器
+std::cout << uni_dist(rd) << std::endl;
 ```
 
 --

@@ -79,7 +79,11 @@ w_t^{k+1}  \longleftarrow & \arg\min \; \frac{1}{m_t}\; L(\mathbf{y}_t, \mathbf{
 &  \arg\min \; \frac{1}{m_t}\; L(\mathbf{y}_t, \mathbf{x}_t w_t) + \frac{\rho}{2} {\Vert w_t - \theta^k + \frac{1}{\rho} \beta_t^k \Vert}_2^2 \\\
 \theta^{k+1} \longleftarrow & \arg\min \; \lambda {\Vert \theta \Vert}_1 - \sum_{t=1}^{T} (\beta_t^k)^T \theta + \frac{\rho}{2} \sum_{t=1}^{T} {\Vert w_t^{k+1} - \theta \Vert}_2^2 \qquad\qquad(2) \\\
 \beta_t^{k+1} \longleftarrow & \beta_t^k + \rho(w_t^{k+1} - \theta^{k+1}) \qquad\qquad\qquad\qquad\qquad\qquad\qquad\;\,(3)
-\end{align} 
+\end{align}  
 $$
 
+迭代公式说明：
 
++ 第1步：局部参数的更新。目标函数可以看作是```损失函数+L2正则项```(\\({\Vert w_t - const \Vert}_2^2\\))，局部参数更新涉及的参数有：\\((\theta, \beta_t, w_t)\\)；
++ 第2步：全局参数的更新。需要详细推到，涉及到软阈值. 全局参数的更新涉及参数：\\((w_1,\cdots,w_n, \rho, \beta_1,\cdots,\beta_n,\lambda)\\)
++ 第3步：局部对偶变量的更新。涉及参数：\\((\theta, \lambda, w_1,\cdots,w_n, \rho)\\)
