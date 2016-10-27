@@ -1,7 +1,8 @@
 ## ADMM调研-v0.1
 
 +  author: zhouyong@staff.sina.com.cn
-+  date: 20160110
++  date: 20150910
++  20160110修改
 
 ### 1. 约束优化问题一般解决方案
 

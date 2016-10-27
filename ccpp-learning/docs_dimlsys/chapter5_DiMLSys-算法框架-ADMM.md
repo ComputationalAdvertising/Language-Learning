@@ -166,7 +166,7 @@ $$
 $$
 \begin{align}
 x^{k+1} & := \arg \min_{x} \mathcal{L}(x, \beta^k) \qquad\qquad\qquad\qquad (step1) \\\
-\beta^{k+1} & := \beta^k + \alpha^k \nabla g(\beta) = \beta^k + \rho(Ax^{k+1}-b)  \quad\;(step2)
+\beta^{k+1} & := \beta^k - \alpha^k \nabla g(\beta) = \beta^k - \rho(Ax^{k+1}-b)  \quad\;(step2)
 \end{align}  \qquad(diml.2.5.10)
 $$
 
@@ -182,7 +182,12 @@ $$
 > 
 > 分布式优化很好理解，因为数据量比较大以至于需要用多台机器来求解优化问题；统计学习就是能够通过计算充分统计量得到最优解的学习问题。 那么，**ADMM算法适用于大规模统计学习在分布式环境下的优化求解问题**。
 > 
-> 说明：本章讲述的ADMM的相关，大多源于此文章。
+> 说明：本章ADMM相关，均源于此文和自己的理解。
+
+**待解决的问题**
+
+1. **为什么公式\\((diml.2.5.10)\\) (step2)中的迭代，用\\(\rho\\)作为step size** ? 
+2. \\(\rho\\)的物理意义？
 
 ### ADMM算法框架
 

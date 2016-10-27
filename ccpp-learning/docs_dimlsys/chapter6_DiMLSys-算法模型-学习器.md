@@ -20,6 +20,12 @@ tags:
 + weibo: [@周永_52ML](http://weibo.com/p/1005051707438033/home?)
 ---
 
+## ADMM参考资料：
+
++ 分布式计算、统计学习与ADMM算法：http://joegaotao.github.io/cn/2014/02/admm/
++ 关于ADMM的研究（二）: http://www.mamicode.com/info-detail-908450.html
++ 
+
 **目录**
 
 + Multi-Task Learning
@@ -71,13 +77,54 @@ $$
 \mathcal{L}(w_t, \theta, \beta_t) = \sum_{t=1}^{T} \frac{1}{m_t} \; L(\mathbf{y}_t, \mathbf{x}_t w_t) + \lambda {\Vert \theta \Vert}_1 + \sum_{t=1}^{T} \beta_t^T(w_t - \theta) + \frac{\rho}{2} \sum_{t=1}^{T} {\Vert w_t - \theta \Vert}_2^2
 $$
 
-参数迭代步骤为：
+参数迭代步骤：
+
++ 局部参数的更新
 
 $$
 \begin{align}
 w_t^{k+1}  \longleftarrow & \arg\min \; \frac{1}{m_t}\; L(\mathbf{y}_t, \mathbf{x}_t w_t) + \beta_t^T w_t + \frac{\rho}{2} {\Vert w_t - \theta^k \Vert}_2^2 \qquad\qquad\;\;(1) \\\
-&  \arg\min \; \frac{1}{m_t}\; L(\mathbf{y}_t, \mathbf{x}_t w_t) + \frac{\rho}{2} {\Vert w_t - \theta^k + \frac{1}{\rho} \beta_t^k \Vert}_2^2 \\\
-\theta^{k+1} \longleftarrow & \arg\min \; \lambda {\Vert \theta \Vert}_1 - \sum_{t=1}^{T} (\beta_t^k)^T \theta + \frac{\rho}{2} \sum_{t=1}^{T} {\Vert w_t^{k+1} - \theta \Vert}_2^2 \qquad\qquad(2) \\\
+&  \arg\min \; \frac{1}{m_t}\; L(\mathbf{y}_t, \mathbf{x}_t w_t) + \frac{\rho}{2} {\Vert w_t - \theta^k + \frac{1}{\rho} \beta_t^k \Vert}_2^2
+\end{align}
+$$
+
++ 全局参数的更新
+
+	$$
+\theta^{k+1} \longleftarrow \arg\min \; \lambda {\Vert \theta \Vert}_1 - \sum_{t=1}^{T} (\beta_t^k)^T \theta + \frac{\rho}{2} \sum_{t=1}^{T} {\Vert w_t^{k+1} - \theta \Vert}_2^2 \qquad\qquad(2)
+	$$
+
+> 推导如下. 优化目标函数，对\\(\theta\\)求偏导：
+>
+$$
+\begin{align}
+& \frac{\partial \, \mathcal{L}(w_t, \theta, \beta_t)} {\partial{\theta}} ＝ \frac{\partial \; \left({\lambda {\vert \theta \vert}_1} - \sum_{t=1}^{T}(\beta_t)^T \theta + \frac{\rho}{2} \sum_{t=1}^{T} {\Vert w_t - \theta \Vert}_2^2 \right)} {\partial {\theta}} \\\
+& \quad = sign(\theta) \cdot \lambda - \sum_{t=1}^{T} \beta_t + {\rho} \sum_{t=1}^{T} \left(\theta - w_t \right) \\\
+& \quad = sign({\vert \theta \vert}_1) \cdot \frac{\lambda}{\rho} - \sum_{t=1}^{T} \left( \frac{\beta_t}{\rho} + w_t\right) + \sum_{t=1}^{T} \theta = 0 \\\
+& 全局参数\theta更新公式整理得到：\mathbf{\underline{\theta = \frac{1}{T} \left(\sum_{t=1}^{T} 
+\left( \frac{\beta_t}{\rho} + w_t\right) - sign({\vert \theta \vert}_1) \cdot \frac{\lambda}{\rho} \right) }}
+\end{align}
+$$
+>
+> 说明：全局参数的更新公式中，有l1-norm项需要求导。虽然其在0处不可导，但是仍有解析解，被称作软阈值（soft thresholding），也被称作压缩算子（shrinkage operator）。
+>
+$$
+\theta =
+\begin{cases}
+\frac{1}{T} \left( \sum_{t=1}^{T} \left( \frac{\beta_t}{\rho} + w_t\right) + \frac{\lambda}{\rho}  \right) & \qquad \text{if} \; {\vert \theta \vert}_1 < 0, 若：\sum_{t=1}^{T} \left( \frac{\beta_t}{\rho} + w_t\right) + \frac{\lambda}{\rho} < 0. \\\
+\frac{1}{T}\left(\sum_{t=1}^{T}\left(\frac{\beta}{\rho} + w_t \right) - \frac{\lambda}{\rho} \right) & \qquad \text{if} \; {\vert \theta \vert}_1 > 0, 若：\sum_{t=1}^{T} \left( \frac{\beta_t}{\rho} + w_t\right) - \frac{\lambda}{\rho} > 0. \\\
+\; 0  & \qquad otherwise.
+\end{cases}
+$$
+> 
+> 全局参数的推导运用到了[软阈值（Soft-Thresholding）]()方法。
+> 
+> 参数：\\(\lambda\\) 为L1正则项系数；\\(\beta_t\\)对偶变量（拉格朗日乘子）；\\(\rho\\)的含义??? \\(\theta\\)全局参数；\\(w_t\\)局部参数；
+
++ 局部对偶变量的更新
+
+$$
+\begin{align}
 \beta_t^{k+1} \longleftarrow & \beta_t^k + \rho(w_t^{k+1} - \theta^{k+1}) \qquad\qquad\qquad\qquad\qquad\qquad\qquad\;\,(3)
 \end{align}  
 $$
