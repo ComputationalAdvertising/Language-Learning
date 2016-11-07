@@ -19,18 +19,53 @@ tags:
 **内容列表**
 
 + 写在前面
++ 分布式环境下的机器学习问题
 + 约束优化问题
 	+ 对偶提升
 	+ 对偶分解
+	+ 增强拉格朗日乘子法
 + 交叉方向乘子法
++ 理论证明
++ 一致性与共享（Consensus and Sharing）
++ ADMM与统计学习
+	+ 适用于哪些学习问题：统计学习（GLM，Addictive Model） 
++ ADMM与机器通信
+	+ ADMM与同步通信机制（以rabit为例）
+	+ ADMM与异步通信机制（以ps为例）
++ ADMM应用场景
+	+ 分布式机器学习任务（大数据学习）
+	+ 多任务学习问题 
++ 参考资料
 
 ### 写在前面
 
 分布式机器学习系统，一定要有链接硬件的软组织－分布式算法框架。这里要介绍的分布式算法框架是ADMM算法（Alternating Direction Multiplier Method，交叉方向乘子法）。
 
-ADMM算法结构天然地适用于分布式环境下具体任务的求解。在详细介绍ADMM算法框架之前，我们先用《约束优化问题一般的解决方案》作为引入，进而过渡到ADMM。
+ADMM算法结构天然地适用于分布式环境下具体任务的求解。在详细介绍ADMM分布式算法之前，我们先了解狭下一个大学习问题的如何在分布式环境下拆分成多个子任务学习问题的。然后通过《约束优化问题一般的解决方案》来阐述ADMM算法的演化过程，过渡到ADMM。最后详细阐述ADMM算法结构、理论可行性证明、分布式环境下如何保证一致性以及信息共享，适用的学习问题。
+
+**ADMM算法问题：**
+
+1. ADMM算法的定位是什么？
+2. ADMM算法为什么适合作为解决分布式机器学习任务的算法框架？ 
+3. ADMM前世今生？（对偶提升，对偶分解，增强拉格朗日法）
+4. ADMM算法框架的结构表达？
+5. ADMM算法在分布式环境下的理论体系？（收敛性，一致性）
+6. ADMM算法在分布式环境下工作过程？（以yarn为例）
+7. 哪些学习模型可以适用于ADMM算法？
+8. AFMM算法使用场景？
+
+### 分布式环境下的机器学习问题
+
+1. 整个的学习任务表达式
+2. 任务拆解成多个子任务，通过数据切分
 
 ### 约束优化问题一般解决方案
+
+1. 对偶提升法的更新逻辑是什么？参数的物理意义？
+2. 为什么对偶提升法对目标函数有较强的约束？
+3. Augmented Lagrangian法添加二次项后 为什么可以缓解约束？
+4. 为什么Augmented Lagrangian不能分解 ？是参数不能分解还是二次项不能分解？
+5. ADMM算法框架为什么可以分解？
 
 约束优化问题可以分为两大类：等式约束优化和不等式约束优化。我们这里以等式约束优化为例，一个典型的等式约束优化问题，形式化表示如下：
 
@@ -187,7 +222,12 @@ $$
 **待解决的问题**
 
 1. **为什么公式\\((diml.2.5.10)\\) (step2)中的迭代，用\\(\rho\\)作为step size** ? 
-2. \\(\rho\\)的物理意义？
+
+	对偶变量归一化（\\(\mu = \frac{1}{\rho} \beta\\)）后，能推导出\\(\mu^{k+1} \leftarrow \mu^{k} + \rho (w_t^{k+1} - \theta) \\).
+	
+2. \\(\rho\\)的物理意义？ 
+
+	\\(\rho\\)仅仅是Augmented Lagrangian项的参数，因为对对偶变量做归一化，经过推导可以得到\\(\rho\\)是对偶变量更新步长。
 
 ### ADMM算法框架
 
@@ -218,17 +258,36 @@ $$
 #### 参数迭代形式
 
 
+### 收敛性证明
 
-### ADMM算法应用
+### 一致性与信息共享
+
++ 问题求解的一致性，全局变量一致性
++ 全局变量共享
+
+### ADMM与统计学习
 
 | 算法框架 | 模型 | 参数学习方法 |
 | --- | :--- | --- | 
-| admm | Lasso <br> Logistic Regression <br> Factorization Machine <br> Filed-awared Factorization Machine | sgd <br> adaptive sgd <br> ftrl <br> lbfgs |
+| admm | Lasso <br> Logistic Regression <br> Factorization Machine <br> Filed-awared Factorization Machine | sgd <br> adaptive sgd <br> ftrl <br> lbfgs <br> mcmc |
 
-#### ADMM + Lasso
 
-#### ADMM + Logistic Regression
+### ADMM与机器通信
 
-#### ADMM + Factorization Machine
+### ADMM应用场景
 
-#### ADMM + Filed-awared Factorization Machine
+### ADMM算法应用
+
+### 参考资料
+
+### PPT
+
++ Precusors of ADMM
+	+ 受限约束优化
+		+ 原问题，拉格朗日，对偶问题（以SVM和最大熵模型为例），强对偶性以及成立条件 
+	+ 对偶提升法
+		+ 本质上是用梯度提升，求两个参数（x, beta），给出迭代公式；
+		+ 之所以称为对偶提升，随着迭代进行，对偶函数是递增的。
+		+ 梯度提升可用于对偶函数g不可导的场景，使用次梯度。
+	+ 
+

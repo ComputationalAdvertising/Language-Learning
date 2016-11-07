@@ -356,13 +356,21 @@ int main(int argc, char* argv[])
 --
 ### [```undefined reference to `...` ```](http://blog.csdn.net/jfkidear/article/details/8276203)
 
-异常示例：```undefined reference to `dmlc::Config::Config(std::istream&, bool)' ```
+异常示例1：```undefined reference to `dmlc::Config::Config(std::istream&, bool)' ```
 
 主要原因是```*.cc```程序没有**链接**dmlc库函数，需要在```*.cc```对应```CMakeLists.txt```文件添加 **链接库函数代码，即```target_link_libraries(${exec_name} dmlc)```**，相当于在g++上添加了参数```-ldmlc```
 
 > 类似的问题： ```undefined reference to 'pthread_create'``` 需要添加```-lpthread```
 
+异常示例2: 
 
+```
+/home/zhouyong03/workplace/DiMLSys/third_party/root/lib/libdmlc.a(hdfs_filesys.o): In function `dmlc::io::HDFSFileSystem::HDFSFileSystem(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)':hdfs_filesys.cc:(.text+0xb1): undefined reference to `hdfsConnect'/home/zhouyong03/workplace/DiMLSys/third_party/root/lib/libdmlc.a(hdfs_filesys.o): In function `dmlc::io::HDFSFileSystem::GetPathInfo(dmlc::io::URI const&)':hdfs_filesys.cc:(.text+0xcd0): undefined reference to `hdfsGetPathInfo'hdfs_filesys.cc:(.text+0x143a): undefined reference to `hdfsFreeFileInfo
+```
+
+编译dmlc-core时，发现是```hdfs_filesys.o```出现了问题，没有链接```hdfsConnect```这些库。
+
+解决办法：
 
 
 

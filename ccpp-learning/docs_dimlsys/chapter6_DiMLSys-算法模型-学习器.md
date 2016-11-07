@@ -77,6 +77,23 @@ $$
 \mathcal{L}(w_t, \theta, \beta_t) = \sum_{t=1}^{T} \frac{1}{m_t} \; L(\mathbf{y}_t, \mathbf{x}_t w_t) + \lambda {\Vert \theta \Vert}_1 + \sum_{t=1}^{T} \beta_t^T(w_t - \theta) + \frac{\rho}{2} \sum_{t=1}^{T} {\Vert w_t - \theta \Vert}_2^2
 $$
 
+对偶变量更新推导(20161106)：
+
+定义参数\\(r_t = w_t - \theta, \mu_t = \frac{1}{\rho} \beta_t \\)，那么增广拉格朗日公式该写为：
+
+$$
+\sum_{t=1}^{T} \left(\rho \mu_t \cdot r_t + \frac{\rho}{2} {\Vert r_t \Vert}_2^2 \right) = \frac{\rho}{2} \sum_{t=1}^{T} \left({\Vert r_t + \mu_t \Vert}_2^2 - {\Vert \mu_t \Vert}_2^2 \right)
+$$
+
+
+$$
+\frac{\partial \left(\frac{\rho}{2} \sum_{t=1}^{T} \left({\Vert r_t + \mu_t \Vert}_2^2 - {\Vert \mu_t \Vert}_2^2 \right) \right) }{\partial \mu_t} = \rho \cdot r_t = \rho \cdot (w_t - \theta)
+$$
+
+对偶变量的更新公式：
+
+
+
 参数迭代步骤：
 
 + 局部参数的更新
@@ -99,8 +116,8 @@ $$
 $$
 \begin{align}
 & \frac{\partial \, \mathcal{L}(w_t, \theta, \beta_t)} {\partial{\theta}} ＝ \frac{\partial \; \left({\lambda {\vert \theta \vert}_1} - \sum_{t=1}^{T}(\beta_t)^T \theta + \frac{\rho}{2} \sum_{t=1}^{T} {\Vert w_t - \theta \Vert}_2^2 \right)} {\partial {\theta}} \\\
-& \quad = sign(\theta) \cdot \lambda - \sum_{t=1}^{T} \beta_t + {\rho} \sum_{t=1}^{T} \left(\theta - w_t \right) \\\
-& \quad = sign({\vert \theta \vert}_1) \cdot \frac{\lambda}{\rho} - \sum_{t=1}^{T} \left( \frac{\beta_t}{\rho} + w_t\right) + \sum_{t=1}^{T} \theta = 0 \\\
+& \quad = \mathbf{sign}(\theta) \cdot \lambda - \sum_{t=1}^{T} \beta_t + {\rho} \sum_{t=1}^{T} \left(\theta - w_t \right) \\\
+& \quad = \mathbf{sign}({\vert \theta \vert}_1) \cdot \frac{\lambda}{\rho} - \sum_{t=1}^{T} \left( \frac{\beta_t}{\rho} + w_t\right) + \sum_{t=1}^{T} \theta = 0 \\\
 & 全局参数\theta更新公式整理得到：\mathbf{\underline{\theta = \frac{1}{T} \left(\sum_{t=1}^{T} 
 \left( \frac{\beta_t}{\rho} + w_t\right) - sign({\vert \theta \vert}_1) \cdot \frac{\lambda}{\rho} \right) }}
 \end{align}
@@ -134,3 +151,12 @@ $$
 + 第1步：局部参数的更新。目标函数可以看作是```损失函数+L2正则项```(\\({\Vert w_t - const \Vert}_2^2\\))，局部参数更新涉及的参数有：\\((\theta, \beta_t, w_t)\\)；
 + 第2步：全局参数的更新。需要详细推到，涉及到软阈值. 全局参数的更新涉及参数：\\((w_1,\cdots,w_n, \rho, \beta_1,\cdots,\beta_n,\lambda)\\)
 + 第3步：局部对偶变量的更新。涉及参数：\\((\theta, \lambda, w_1,\cdots,w_n, \rho)\\)
+
+
+---
+## 资料
+
+
++ 论文
++ 相关资料博客
+	+ [​DMLC对于机器学习和系统开发者意味着什么](http://weibo.com/p/1001603845546463886385?mod=zwenzhang)@陈天奇
