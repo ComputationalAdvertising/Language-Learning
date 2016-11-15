@@ -74,14 +74,6 @@ $$
 
 其中，**目标函数**\\(f(x): R^n \rightarrow R\\)，\\(Ax=b\\)为**约束条件**，参数\\(x \in R^n, A \in R^{m \times n}, b \in R^m\\)。\\(s.t\\)是英文```subject to```的缩写。如何求解这个等式约束优化问题呢？
 
-$$
-\begin{array}{lc}
-\min & f(x) \\\
-s.t. & Ax = b \\
-\end{array}
-\Longrightarrow L(x, y) = f(x) + y^T(Ax - b) \overset{对偶函数（下界）}{\Longrightarrow} g(y) = \inf_x L(x, y)
-$$
-
 <br>
 #### 对偶提升法
 
@@ -279,14 +271,6 @@ $$
 
 相比对偶提升法，增广拉格朗日乘子法有更好的收敛性质，并且拥有对目标\\(f(x)\\)不做强凸条件的限制，但是这些好处总是要付出一定的代价的：**如果目标函数是\\(f(x)\\)是可分的，此时增广拉格朗日函数\\(\mathcal{L}_{\rho}(x, \beta)\\)是不可分的（因为惩罚函数项部分涉及到矩阵相乘计算，无法用分块形式进行并行化求解），因此公式\\((diml.2.5.11)\\)的\\(step1\\)没有办法在分布式环境下并行优化**。
 
----
-
-> **回答问题：为什么在优化领域，一般要求目标函数是凸的呢？**
->
-> 参考：http://blog.csdn.net/yhdzw/article/details/39288581
-
----
-
 如果能结合Dual Ascent的并行求解的优势 和 Augmented Lagrangians Methods of Multipliers鲁棒性和不错的收敛性质，那么就可以使大多数目标函数求解都能在分布式环境下并行实现，岂不美哉！！！
 
 果然在2010年由Stephen Boyd大师等人系统性的整理了交替方向乘子法（ADMM算法），可以解决上述的问题。为此它们长篇论述了ADMM算法的演化过程，参考论文：[Distributed Optimization and Statistical Learning via the Alternating Direction Method of Multipliers](http://web.stanford.edu/~boyd/papers/pdf/admm_distr_stats.pdf) 该文被《Foundations and Trends in Machine Learning》录入。
@@ -299,63 +283,96 @@ $$
 
 ### 交替方向乘子法（ADMM）
 
-交替方向乘子法（Alternating Direction Method of Multipliers，简称ADMM）可以理解为增广拉格朗日乘子法的变种。旨在整合对偶提升法的可分解性和增广拉格朗日乘子法优秀的收敛性质，进一步提出的新算法。
+#### ADMM算法概述
 
-我们修改下公式\\((diml.2.5.1)\\)，这样更符合统计学习目标函数的形式. 重新定义的优化问题：
+交替方向乘子法（Alternating Direction Method of Multipliers，简称ADMM）可以理解为增广拉格朗日乘子法的变种，旨在整合对偶提升法的可分解性和增广拉格朗日乘子法优秀的收敛性质，进一步提出的新算法。
 
-$$
-\begin{align}
-& \min \quad f(x) + g(z) \\\
-& s.b. \quad Ax + Bz = C
-\end{align}  \qquad\qquad(diml.2.5.14)
-$$
-
-增广拉格朗日函数
+我们修改下公式\\((diml.2.5.1)\\)，这样更符合统计学习目标函数的形式. 重新定义的优化问题和Lagrange函数：
 
 $$
-\mathcal{L}_{\rho}(x,z,\beta) = f(x) + g(z) + \underline{ \frac{\rho}{2} {\Vert Ax+Bz-C \Vert}_2^2 + \beta^T(Ax+Bz-C) } \qquad(diml.2.5.15)
+\begin{array}{lc}
+\min & f(x) \\\
+s.t. & Ax = b \\
+\end{array}
+\Longrightarrow L(x, y) = f(x) + y^T(Ax - b) \overset{对偶函数（下界）}{\Longrightarrow} g(y) = \inf_x L(x, y)
 $$
 
-其中\\(x \in R^n, z \in R^m; A \in R^{p \times n}, B \in R^{p \times m}, C \in R^p\\)。按照乘子法的思路，参数交替更新迭代公式为：
+$$
+\begin{array}{lc}
+\min & f(x) + g(z) \\\
+s.t. & Ax + Bz = C
+\end{array}
+\Longrightarrow \mathcal{L}_{\rho}(x, z, \beta) = f(x) + g(z) +\underline{ \frac{\rho}{2} {\Vert Ax+Bz-C \Vert}_2^2 + \beta^T(Ax+Bz-C) } \quad (diml.2.5.14)
+$$
+
+其中\\(x \in R^n, z \in R^m; A \in R^{p \times n}, B \in R^{p \times m}, C \in R^p\\)。按照乘子法的思路，参数交替更新迭代：
 
 $$
 \begin{align}
 (x^{k+1}, z^{k+1}) & := \arg \min_{x,z} \mathcal{L}_{\rho}(x,z,\beta^k) \qquad\qquad(step1) \\\
 \beta^{k+1} & := \beta^k + \rho (Ax^{k+1} + Bz^{k+1} - C) \quad(step2)
-\end{align}  \qquad(diml.2.5.16)
+\end{align}  \qquad(diml.2.5.15)
 $$
 
-上式中的\\(step1\\)要求对两个原始联合最小化。我们看 ADMM算法的参数更新方式：
+上式中的\\(step1\\)要求对两个原始变量联合最小化，也就是说\\(x,z\\)是融合在一起优化的，暂且不说联合优化是否容易求解，可以确定的这一步优化不可分解。
+
+那我们看ADMM是如何做的？ADMM采用了拆分思想，最初就把\\(x\\)和\\(z\\)分别看作两个不同的变量，约束条件也是如此。采用交替方式迭代（序贯式迭代），称为**交替方向**(alternating direction)。
 
 $$
 \begin{align}
 x^{k+1} & := \arg \min_x \mathcal{L}_{\rho}(x, z^{k}, \beta^k) \qquad\qquad (step1) \\\
 z^{k+1} & := \arg \min_z \mathcal{L}_{\rho}(x^{k+1}, z, \beta^k) \qquad\quad\; (step2) \\\ 
 \beta^{k+1} & := \beta^{k} + \rho(Ax^{k+1} + Bz^{k+1} - C) \quad\;\; (step3)
-\end{align}  \qquad\qquad(diml.2.5.17)
+\end{align}  \qquad\qquad(diml.2.5.16)
 $$
 
-不同于公式\\((diml.2.5.16)\\)，ADMM算法采用交替方式迭代（又称序贯式迭代），称为**交替方向**(alternating direction)。拆分参数\\(x\\)和\\(z\\)两步迭代最大的好处是：**当\\(f\\)和\\(g\\)都可分时，目标**
+ADMM算法拆分参数\\(x\\)和\\(z\\)两步迭代最大的好处是：**当\\(f\\)和\\(g\\)都可分时，参数可以并行求解。**
 
-从ADMM名字上可以看出，它Augmented Lagrangians上添加了交叉方向（Alternating Direction），然后通过交叉换方向来交替优化。ADMM优化算法框架的结构形式如下：
+在[```chapter6_DiML_算法框架_学习器```]()中可以看到，ADMM这种参数和目标函数的拆分非常适合机器学习中的\\(\ell_1 \text{-norm}\\)优化问题，即：```loss function + regularization```目标函数的分布式求解。
 
-	
 
-	
-增强Lagrange函数
+#### ADMM算法性质与评价
+
+**1). 收敛性**
+
+论文中对收敛性的证明，提到了两个假设条件：
+
++ $f(x)$和$g(z)$分别是扩展的实质函数：\\(R^{n}(R^{m}) \rightarrow R \; \cup {+\infty} \\), 并且是closed、proper和convex的；
++ 增广拉格朗日函数\\(\mathcal{L}_0\\)有一个鞍点（saddle point）；对于约束中的矩阵$A,B$都不需要满秩。
+
+在满足这两个假设条件下，可以保证残差、目标函数、对偶变量的收敛性。（具体证明参考[1] Appendix A）.
+
+> 实际应用表明，ADMM算法收敛速度是很慢的，类似于共轭梯度法。迭代数十次可以得到一个可接受的结果，与快速的高精度算法（牛顿法、拟牛顿法、内点法等）相比收敛就满多了。因此实际应用中ADMM会与其它高精度算法结合其俩，这样从一个可接受的结果变得在预期时间内可以达到较高的收敛精度。
+> 
+> 在大规模问题求解中，高精度的参数解对于预测的泛化效果没有很大的提高。因此实际应用中，预期时间内得到的一个可接受的结果就可以直接应用预测了。
+
+
+**2). 最优条件和停止准则**
+
+最优条件先省略。放在公式(diml.2.5.17)中
+
+从最优条件中可以得到初始残差（primal residuals）和对偶残差（dual residuals）的表达式：
 
 $$
-\mathcal{L}_{\rho}(x,z,\beta) = f(x) + g(z) + \underline{ \beta^T(Ax+Bz-C) + \frac{\rho}{2} {\Vert Ax+Bz-C \Vert}_2^2 }  \qquad(diml.2.5.12)
+\begin{align}
+r^{k+1} & := Ax^{k+1} + Bz^{k+1} - C \qquad(初始残差) \\\
+s^{k+1} & := \rho A^T B(z^{k+1} - z^{k}) \qquad\quad(对偶残差)
+\end{align}  \qquad\qquad(diml.2.5.18)
+$$
+
+迭代停止准则比较难以把握，因为受收敛速度问题，要想获得一个不错的参数解，判断迭代停止条件还是比较重要的。实际应用中，一般都根据初始残差和对偶残差足够小来停止迭代。阈值包含了绝对容忍度（absolute tolerance）和相对容忍度（relative tolerance），阈值设置难以把握，具体形式如下：
+
+$$
+\begin{align}
+{\Vert s^k \Vert} \leq 
+\end{align}
 $$
 	
-从上面形式确实可以看出，ADMM的思想就是想把primal变量、目标函数拆分，但是不再像dual ascent方法那样，将拆分开的\\(x_i\\)都看做是\\(\mathbf{x}\\)的一部分，后面融合的时候还需要融合在一起。而是最先开始就将拆开的变量分别看做是不同的变量\\(x\\)和\\(z\\)，约束条件也如此处理。这样的好处就是后面不需要一起融合\\(x\\)和\\(z\\)，保证了前面优化过程的可分解性。
 
 
-<br>
-#### 参数迭代形式
+#### ADMM一般形式与部分具体的应用
 
 
-### 收敛性证明
 
 ### 一致性与信息共享
 
