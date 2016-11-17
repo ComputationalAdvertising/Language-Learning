@@ -19,16 +19,23 @@ tags:
 **内容列表**
 
 + 写在前面
-+ 分布式环境下的机器学习问题
-+ 约束优化问题
++ 大规模机器学习问题
++ 引入：约束优化问题
 	+ 对偶提升
 	+ 对偶分解
 	+ 增强拉格朗日乘子法
 + 交替方向乘子法
-+ 理论证明
-+ 一致性与共享（Consensus and Sharing）
+	+ 算法框架
+	+ 收敛性证明
++ 一致性优化与均分优化
+	+ 全局变量一致性优化（consensus）
+	+ 均分优化（sharing）
++ ADMM在优化领域的具体应用
+	+ 等式约束的凸优化问题
+	+ $\ell_1 \text{norm}$问题 
 + ADMM与统计学习
-	+ 适用于哪些学习问题：统计学习（GLM，Addictive Model） 
+	+ 支持的统计学习模型
+	+ 预估模型
 + ADMM与机器通信
 	+ ADMM与同步通信机制（以rabit为例）
 	+ ADMM与异步通信机制（以ps为例）
@@ -39,29 +46,39 @@ tags:
 
 ### 写在前面
 
-前面的第2、3、4三章内容主要论述了一个完整的机器学习系统的底层系统，那么如何在算法层面让底层系统有机的运转，以实现分布式学习任务呢？
+前面的第2、3、4章内容主要论述了一个机器学习计算引擎需要依赖的底层系统，那么如何运用一个分布式算法框架让底层系统有机的运转，以实现大规模学习任务呢？
 
 本章要论述了分布式优化算法框架－ADMM算法－来实现这一功能。ADMM算法并不是一个很新的算法，他只是整合许多不少经典优化思路，然后结合现代统计学习所遇到的问题，提出了一个比较一般的比较好实施的**分布式计算框架**。
 
 ADMM算法结构天然地适用于分布式环境下具体任务的求解。在详细介绍ADMM分布式算法之前，我们先了解狭下一个大学习问题的如何在分布式环境下拆分成多个子任务学习问题的。然后通过《约束优化问题一般的解决方案》来阐述ADMM算法的演化过程，过渡到ADMM。最后详细阐述ADMM算法结构、理论可行性证明、分布式环境下如何保证一致性以及信息共享，适用的学习问题。
 
-**ADMM算法问题：**
+### 大规模机器学习问题
 
-1. ADMM算法的定位是什么？
-2. ADMM算法为什么适合作为解决分布式机器学习任务的算法框架？ 
-3. ADMM前世今生？（对偶提升，对偶分解，增强拉格朗日法）
-4. ADMM算法框架的结构表达？
-5. ADMM算法在分布式环境下的理论体系？（收敛性，一致性）
-6. ADMM算法在分布式环境下工作过程？（以yarn为例）
-7. 哪些学习模型可以适用于ADMM算法？
-8. AFMM算法使用场景？
+大规模机器学习问题（large-scale machine learning），我的理解是它必须要解决“三大”问题：1. 大数据学习能力；2. 大模型学习能力；3. 产生更大的效果。
 
-### 分布式环境下的机器学习问题
+毫无疑问，大规模机器学习对比单机版机器学习任务，它要有更大的数据吞吐、处理和学习能力（远超出单机版能处理的数据范围）；由于存储和计算资源的增加，它必然得具体单机学习不了的复杂模型的能力，比如10亿级别以上的LR模型，更复杂的树模型等；在具备前两项能力的同时，必须要产生更大更好的效果（improve performance），否则大规模机器学习的存储毫无疑义，
 
-1. 整个的学习任务表达式
-2. 任务拆解成多个子任务，通过数据切分
+> 业内其他的叫法，比如distributed machine learning，cloud machine learning，要表达的意思差不多.
 
-### ADMM从哪里来
+通常的大规模机器学习解决方案，因为海量数据的原因，需要将一个大的学习任务拆解成多个子任务并行进行，对海量数据切分为若干块，每个子任务学习仅用一块数据进行训练，整合最后的学习结果，得到最终的解。
+
+损失函数用\\(L(w^T x, y)\\)标示，带正则项的机器学习优化目标如下：
+
+$$
+\min_{w} \; \sum_{(x, y) \in \mathcal{D}} L(w^T x, y) + \lambda {\Vert w \Vert}_1 
+\; \overset{多任务联合学习}{\Longrightarrow}
+\min_{w_1, \cdots, w_T; w} \sum_{t=1}^{T} \left( \sum_{(x,y) \in \mathcal{D}_t} L(w_t^T x_t, y_t) \right) + \lambda {\Vert w \Vert}_1 
+$$
+
+其中，$\mathcal{D}$表示训练数据集，把$\mathcal{D}$切分为$T$个子数据集，每一块用$\mathcal{D_t}$表示；模型参数$w \in R^n，n$为特征维度，$\lambda$为正则项系数。箭头右边是新的损失函数，其中参数$w$起到了连接不同子任务的作用，$\lambda$控制了多个子任务连接的强度，$\lambda$越大说明连接强度越强。当$\lambda = 0$时，等价于$T$个子任务独立学习，子任务之间没有关联。
+
+**问题1: 如何在分布式环境下求解多任务联合学习问题？** 
+
+本章要讲述的ADMM算法就是解决这类学习问题不错的解决方案。严格意义上来讲，ADMM不同于梯度法、共轭梯度法、牛顿法、拟牛顿法等参数学习算法，它不是一个具体的参数学习算法，把它称为**分布式算法框架**更合理。
+
+在介绍ADMM算法之前，我们先来看下它的前身（precursors）是谁？是如何演化过来的？
+
+### ADMM由来
 
 谈到ADMM算法的演化历程，应该要从等式约束优化问题说起。一个典型的等式约束优化问题，形式化表示如下：
 
@@ -73,6 +90,18 @@ $$
 $$
 
 其中，**目标函数**\\(f(x): R^n \rightarrow R\\)，\\(Ax=b\\)为**约束条件**，参数\\(x \in R^n, A \in R^{m \times n}, b \in R^m\\)。\\(s.t\\)是英文```subject to```的缩写。如何求解这个等式约束优化问题呢？
+
+
+**ADMM算法问题：**
+
+1. ADMM算法的定位是什么？
+2. ADMM算法为什么适合作为解决分布式机器学习任务的算法框架？ 
+3. ADMM前世今生？（对偶提升，对偶分解，增强拉格朗日法）
+4. ADMM算法框架的结构表达？
+5. ADMM算法在分布式环境下的理论体系？（收敛性，一致性）
+6. ADMM算法在分布式环境下工作过程？（以yarn为例）
+7. 哪些学习模型可以适用于ADMM算法？
+8. AFMM算法使用场景？
 
 <br>
 #### 对偶提升法
@@ -364,31 +393,179 @@ $$
 
 $$
 \begin{align}
-{\Vert s^k \Vert} \leq 
+{\Vert s^k \Vert} \leq \epsilon^{\text{dual}} & = \sqrt{n} \epsilon^{\text{abs}} + \epsilon^{\text{rel}} {\Vert A^T y^k \Vert}_2 \\\
+{\Vert r^k \Vert}_2 \leq & = \sqrt{p} \epsilon^{\text{abs}} + \epsilon^{\text{rel}} \; \text{max} \{ {\Vert Ax^k \Vert}_2, {\Vert Bz^k \Vert} _2, {\Vert C \Vert}_2 \}
+\end{align}  \qquad\quad (diml.2.5.19)
+$$
+
+上面的$\sqrt{p}$和$\sqrt{n}$分别是维度和样本量。一般而言，相对停止阈值$\epsilon^{\text{rel}} = 10^{-1}$或$10^{-4}$，绝对阈值的选取要根据变量的取值范围来选取。
+
+此外，在对偶变量更新的惩罚参数\\(\rho\\)原来是不变的。有一些文章做了可变的惩罚参数，目的是为了降低惩罚参数对初始值的依赖。而证明变动的$\rho$给ADMM的收敛性证明比较困难，因此实际中开设经过一系列迭代后$\rho$也稳定，直接用固定的惩罚参数$\rho$了。
+
+### 一致性优化和均分优化
+
+分布式优化有两个很重要的问题，即一致性优化问题和共享优化问题，这也是ADMM算法通往并行和分布式计算的途径。下面以机器学习问题的参数优化为例解释这两个重要的概念。
+
+**全局变量一致性优化（global consensus）**
+
+所谓全局变量一致性优化问题，说白了就是**切割大样本数据，并行化计算**。即整体优化求解任务根据目标函数分解成$T$个子任务，每个子任务和子数据都可以获得一个参数解$x_i$，但是整体优化任务的解只有一个$z$。机器学习中的优化目标通常是“损失函数＋正则项”的结构形式，问题就转化为**带正则项的全局一致性问题**，优化问题可以写成如下形式：
+
+$$
+\begin{array}{lc}
+\min \quad \sum_{i=1}^{T} \; f_i(x_i) + g(z)\\\
+s.t. \quad x_i = z, \; x_i \in R^n, i=1,\cdots,T
+\end{array}
+\overset{参数迭代}{\Longrightarrow }
+\begin{align}
+x_i^{k+1} & := \arg \min_{x_i} \left(f_i(x_i) + (\beta_i^{k})^T (x_i - z^k) + \frac{\rho}{2} {\Vert x_i - z \Vert}_2^2 \right) \\\
+z^{k+1} & := \arg \min_{z} \left(g(z) - \sum_{t=1}^{T} (\beta_t^k)^T \theta + \frac{\rho}{2} {\Vert x_i - z \Vert}_2^2 \right) \\\
+\beta_i^{k+1} & := \beta_i^k + \rho (x_i^{k+1} - z^{k+1})
 \end{align}
 $$
-	
+
+注意，此时$f_i : R^n \rightarrow R \, \cup {+\infty}$仍然是凸函数，而局部参数$x_i$并不是对参数空间进行划分，而是把数据集合$\mathcal{D}$划分为$T$个子集，对数据划分。下文提到的ADMM在$\ell_{1}\text{-norm}$问题中具体应用会详细推导这部分。
+
+**均分优化问题（sharing）**
+
+在统计学习优化问题中，所谓均分优化问题说白了就是**切分特征维度，并行化求解**。它更侧重于高维数据并行化求解的应用场景，通过切分特征维度得到并行化处理。同样假设数据矩阵$A \in R^{m \times n}$和$b \in R^m$，此时满足$n \gg m$，也就是说样本特征维度远大于样本数。shareing的做法是对数据矩阵$A$按照特征空间切分（竖着切分），
+
+$$
+\begin{array}{lc}
+A = [A_1, A_2, \cdots, A_T], A_i \in R^{m \times n_i}; \\\ 
+x = (x_1, x_2, \cdots, x_T), x_i \in R^{n_i} 
+\end{array}
+\Longrightarrow
+\begin{array}{lc}
+Ax = \sum_{i=1}^{T} A_i x_i ; \\\
+g(x) = \sum_{i=1}^{T} g_i(x_i)
+\end{array}
+\Longrightarrow 
+\min \; L \left(\sum_{i=1}^{T} A_i x_i - b \right) + \sum_{i=1}^{T} g_i(x_i)  \quad(diml.2.5.21)
+$$
+
+我们把公式$(diml.2.5.21)$改成ADMM sharing形式：
+
+$$
+\begin{array}{lc}
+\min \; L(\sum_{i=1}^{T} z_i - b) + \sum_{i=1}^{T} g_i(x_i) \\\
+s.t. \quad A_i x_i - z_i = 0, \; z_i \in R^m
+\end{array}
+\Longrightarrow 
+\begin{align}
+x_i^{k+1} & := \arg \min_{x_i} \left(g_i(x_i) + \frac{\rho}{2} {\Vert A_i x_i - A_i x_i^k + \overline{Ax}^k - \overline{z}^k + \mu^k \Vert}_2^2 \right) \\\
+z^{k+1} & := \arg \min_{z} \left(L(N\overline{z} - b) + T \frac{\rho}{2} {\Vert \overline{z} - \overline{Ax}^{k+1} - \mu^k \Vert}_2^2 \right) \\\
+\mu_{k+1} & := \mu_i^k + \overline{Ax}^{k+1} - \overline{z}^{k+1}
+\end{align} 
+$$
+
+### ADMM在优化领域的具体应用
+
+#### $\ell_{1}\text{-norm}$问题
+
+ 这里的$\ell_{1}\text{-norm}$问题不仅仅是指称为[Lasso](https://en.wikipedia.org/wiki/Lasso_(statistics))问题，而是包含了多种$\ell_{1}\text{-norm}$类型问题。 它的初衷是通过特征选择（自变量选择）来提高模型的预测精度和解释性，具体做法是在优化目标上添加$\ell_{1}$正则项。
+
+> Lasso 的基本思想是在回归系数的绝对值之和小于一个常数的约束条件下，使残差平方和最小化，从而能够产生某些严格等于0 的回归系数，得到可以解释的模型。
+
+如果要大规模部署$\ell_{1}\text{-norm}$问题的解决方案，ADMM算法可能是首选。它非常适合机器学习和统计学习的优化问题，因为机器学习问题的优化目标大部分都是**“损失函数＋正则项”**形式. 这种表达形式切好饿意套用ADMM算法框架$f(x) + g(z)$。因此机器学习问题结合ADMM算法框架基本可以在分布式环境下求解很多已由的问题。
+
+本系列我们用ADMM算法框架主要解决分布式机器学习任务的参数优化问题，所以我们直接关注**一般化的损失函数＋$\ell_{1}正则项问题$**。这类问题通用框架：
+
+以平方损失函数为例，定义损失函数\\(L(y^{(i)}, w^Tx^{(i)}) = \left(y^{(i)} - w^Tx^{(i)} \right)^2\\). 优化目标：
+
+$$
+\begin{array}{lc}
+\min_{w} \quad \frac{1}{m} \sum_{i=1}^{m} \left(y^{(i)} - w^Tx^{(i)} \right)^2 + \lambda {\Vert w \Vert}_1
+\end{array} \qquad\qquad\qquad\qquad\quad (整体优化目标)\\\
+\overset{\text{ADMM}形式} {\Longrightarrow } \quad 
+\begin{array}{lc}
+\min_{w_1, w_2, \cdots, w_T} \quad \sum_{t=1}^{T} \left( \frac{1}{m_t} \sum_{i=1}^{m_t} \left(y_t^{(i)} - w_t^T x_t^{(i)} \right)^2 \right) + \lambda{\Vert \theta \Vert}_1  \\\
+s.b \qquad\; w_t=\theta \;(t=1,\cdots,T)
+\end{array} \quad (分布式优化目标表达式)
+$$
+
+令\\(\frac{1}{m_t} \sum_{i=1}^{m_t} \left(y_t^{(i)} - w_t^T x_t^{(i)} \right)^2 = L(\mathbf{y}_t, \mathbf{x}_t w_t), \; \\)，增广拉格朗日函数：
+
+$$
+\mathcal{L}(w_t, \theta, \beta_t) = \sum_{t=1}^{T} \; L(\mathbf{y}_t, \mathbf{x}_t w_t) + \lambda {\Vert \theta \Vert}_1 + \sum_{t=1}^{T} \beta_t^T(w_t - \theta) + \frac{\rho}{2} \sum_{t=1}^{T} {\Vert w_t - \theta \Vert}_2^2
+$$
+
+**参数迭代过程**
+
++ 局部参数更新
+
+$$
+\begin{align}
+w_t^{k+1}  \longleftarrow \; & \arg\min_{w_t} \; \frac{1}{m_t}\; L(\mathbf{y}_t, \mathbf{x}_t w_t) + (\beta_t^k)^T w_t + \frac{\rho}{2} {\Vert w_t - \theta^k \Vert}_2^2 \qquad\qquad\;\;(1) \\\
+\; & \arg\min_{w_t} \; \frac{1}{m_t}\; L(\mathbf{y}_t, \mathbf{x}_t w_t) + \frac{\rho}{2} {\Vert w_t - \theta^k + \frac{1}{\rho} \beta_t^k \Vert}_2^2
+\end{align}
+$$
+
++ 全局参数更新
+
+	$$
+\theta^{k+1} \longleftarrow \arg\min \; \lambda {\Vert \theta \Vert}_1 - \sum_{t=1}^{T} (\beta_t^k)^T \theta + \frac{\rho}{2} \sum_{t=1}^{T} {\Vert w_t^{k+1} - \theta \Vert}_2^2 \qquad\qquad(2)
+	$$
+
+	> 推导如下. 优化目标函数，对\\(\theta\\)求偏导：
+	>
+$$
+\begin{align}
+\frac{\partial \, \mathcal{L}(w_t, \theta, \beta_t)} {\partial{\theta}} & ＝ \frac{\partial \; \left({\lambda {\vert \theta \vert}_1} - \sum_{t=1}^{T}(\beta_t)^T \theta + \frac{\rho}{2} \sum_{t=1}^{T} {\Vert w_t - \theta \Vert}_2^2 \right)} {\partial {\theta}} \\\
+& = \mathbf{sign}(\theta) \cdot \lambda - \sum_{t=1}^{T} \beta_t + {\rho} \sum_{t=1}^{T} \left(\theta - w_t \right) \\\
+& = \mathbf{sign}({\vert \theta \vert}_1) \cdot \frac{\lambda}{\rho} - \sum_{t=1}^{T} \left( \frac{\beta_t}{\rho} + w_t\right) + \sum_{t=1}^{T} \theta = 0 \\\
+\end{align}
+$$
+>
+$$
+全局参数\theta更新公式整理得到：\mathbf{\underline{\theta = \frac{1}{T} \left(\sum_{t=1}^{T} 
+\left( \frac{\beta_t}{\rho} + w_t\right) - sign({\vert \theta \vert}_1) \cdot \frac{\lambda}{\rho} \right) }}
+$$
+> 说明：全局参数的更新公式中，有$\ell_{1}\text{-norm}$项需要求导。虽然在0处不可导，但是仍有解析解，这里使用软阈值的方法得到解析解：
+>
+$$
+\theta =
+\begin{cases}
+\frac{1}{T} \left( \sum_{t=1}^{T} \left( \frac{\beta_t}{\rho} + w_t\right) + \frac{\lambda}{\rho}  \right) & \qquad \text{if} \; {\vert \theta \vert}_1 < 0, 若：\sum_{t=1}^{T} \left( \frac{\beta_t}{\rho} + w_t\right) + \frac{\lambda}{\rho} < 0. \\\
+\frac{1}{T}\left(\sum_{t=1}^{T}\left(\frac{\beta}{\rho} + w_t \right) - \frac{\lambda}{\rho} \right) & \qquad \text{if} \; {\vert \theta \vert}_1 > 0, 若：\sum_{t=1}^{T} \left( \frac{\beta_t}{\rho} + w_t\right) - \frac{\lambda}{\rho} > 0. \\\
+\; 0  & \qquad otherwise.
+\end{cases}
+$$
+> 
+> [软阈值（Soft-Thresholding）]()又称压缩算子（shrinkage operator）
+> 
+> 参数：\\(\lambda\\) 为L1正则项系数；\\(\beta_t\\)对偶变量（拉格朗日乘子）; \\(\theta\\)全局参数; \\(w_t\\)局部参数;
+
++ 局部对偶变量的更新
+
+$$
+\begin{align}
+\beta_t^{k+1} \longleftarrow & \beta_t^k + \rho(w_t^{k+1} - \theta^{k+1}) \qquad\qquad\qquad\qquad\qquad\qquad\qquad\;\,(3)
+\end{align}  
+$$
+
+迭代公式说明：
+
++ 第1步：局部参数的更新。目标函数可以看作是```损失函数+L2正则项```(\\({\Vert w_t - const \Vert}_2^2\\))，局部参数更新涉及的参数有：\\((\theta, \beta_t, w_t)\\)；
++ 第2步：全局参数的更新。需要详细推到，涉及到软阈值. 全局参数的更新涉及参数：\\((w_1,\cdots,w_n, \rho, \beta_1,\cdots,\beta_n,\lambda)\\)
++ 第3步：局部对偶变量的更新。涉及参数：\\((\theta, \lambda, w_1,\cdots,w_n, \rho)\\)
+
+#### 受约束的凸优化问题
 
 
-#### ADMM一般形式与部分具体的应用
+<br>
+### ADMM for CTR Model
+--
 
-
-
-### 一致性与信息共享
-
-+ 问题求解的一致性，全局变量一致性
-+ 全局变量共享
-
-### ADMM与统计学习
+generalized lasso, group lasso, 高斯图模型，Tensor型图模型等问题的求解，都可以在ADMM算法框架上直接应用和实施，这正是ADMM算法的一个优势所在，便于大规模分布式部署。
 
 | 算法框架 | 模型 | 参数学习方法 |
 | --- | :--- | --- | 
 | admm | Lasso <br> Logistic Regression <br> Factorization Machine <br> Filed-awared Factorization Machine | sgd <br> adaptive sgd <br> ftrl <br> lbfgs <br> mcmc |
 
-
-### ADMM与机器通信
-
 ### ADMM应用场景
+
++ Big-Data Learning 
++ Multi-Task Learning 
 
 ### ADMM算法应用
 
