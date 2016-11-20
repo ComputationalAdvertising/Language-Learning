@@ -158,9 +158,11 @@ std::cout << uni_dist(rd) << std::endl;
 
 在C++中创建一个对象时（堆对象），需要保证**对象一定会被释放，但只能释放一次，并且释放后指向该对象的指针应该马上归0。**
 
-> 一定要有delete对象，但不可重复delete（会释放别人的空间），delete后对应的指针如果不归0（或null），该指针可能会操作其对应的空间，侵犯别人的地盘（指针霸气侧漏）。
+> 1. 内存泄漏：一定要有delete对象；
+> 2. 重复释放：但不可重复delete（会释放别人的空间）；
+> 3. 野指针：delete后对应的指针如果不归0（或null），该指针可能会操作其对应的空间，侵犯别人的地盘（指针霸气侧漏）。
 > 
-> 以上程序员操作不当，都会成为导致内存泄漏的主要原因。
+> 以上指针操作不当的行为，都会成为导致内存泄漏的主要原因。
 
 我们需要一个类似Java能自动回收内存的机制。因此智能指针诞生，**智能指针是借鉴了Java内存回收机制（引用计数器机制）**，从而不用由程序员执行delete/free操作了。
 
@@ -177,7 +179,7 @@ std::cout << uni_dist(rd) << std::endl;
 ```
 Animal a = new Animal(); Animal b = a;
 ```
-> 这里其实只生成了一个对象，a和b仅仅是把持对象的引用而已。但在C++中不是这样：
+> 这里其实只生成了一个对象，a和b仅仅是共同把持一个对象的引用而已。但在C++中不是这样：
 > ```Animal a; 	Animal b；``` 确实是生成了两个对象。
 > 
 > Java中往容器中放对象，实际放入的是引用，不是真正的对象。而在C++的vector中push_back采用的是值拷贝。如果像实现Java中的引用语义，此时可使用智能指针。
@@ -200,7 +202,7 @@ class Base {	public:		Base(int param = 0) {			number_ = param;			std::cout <
 
 #### [```auto_ptr```](http://www.cplusplus.com/reference/memory/auto_ptr/)
 
-首先要说明的是，在C++11中，已经废除了```template <class X> class auto_ptr```这样一个类模型，取而代之的是```std::unique_ptr```：与```auto_ptr```功能类似，但是提升了安全性，添加了deleter功能，并且支持数组。
+首先要说明的是，在C++11中，已经废除了```template <class X> class auto_ptr```这样一个类模型，取而代之的是```std::unique_ptr```。与```auto_ptr```功能类似，但是提升了安全性，添加了deleter和"operator="功能，并且支持数组。
 
 > 如果在C++11中使用```std::auto_ptr```会提示下面类似的warning：
 > 
@@ -218,8 +220,8 @@ int main(int argc, char * agrv[]) {	/* std::auto_ptr */	std::auto_ptr<Base> my
 ```
 **std::auto_ptr几点说明：**
 
-1. auto_ptr对象赋值，会失去内存管理所有权，使得```my_auto_ptr```悬空，最后使用时会导致程序崩溃。因此，**使用```std::auto_ptr```时，尽量不要使用````operator=```操作符**，如果使用了，不要再使用先前对象。
-2. 使用```std::auto_ptr release()```函数时，会发现创建出来的对象没有被析构，导致内存泄漏。这是因为```release```函数不会释放对象，仅仅归还所有权。释放对象可使用```reset()```函数。
+1. auto_ptr对象赋值，会失去内存管理所有权，使得```my_auto_ptr```悬空，最后使用时会导致程序崩溃。因此，**使用```std::auto_ptr```时，尽量不要使用```operator=```操作符**，如果使用了，不要再使用先前对象。
+2. 使用```std::auto_ptr release()```函数时，会发现创建出来的对象没有被析构，导致内存泄漏。这是因为**```release```函数不会释放对象空间，仅仅归还所有权**。释放对象可使用```reset()```函数。
 3. ```std::auto_ptr```不能当作参数传递，同时其管理的对象也不能放入```std::vector```等容器中，因为```operator=```问题。
 
 + 参考链接：http://blog.csdn.net/xt_xiaotian/article/details/5714477
@@ -227,23 +229,23 @@ int main(int argc, char * agrv[]) {	/* std::auto_ptr */	std::auto_ptr<Base> my
 
 #### [```unique_ptr```](http://www.cplusplus.com/reference/memory/unique_ptr/?kw=unique_ptr)
 
-上面的```std::auto_ptr```在复制构造或者```operator=```时，原先的对象就报废了，因为所有权转移到新对象去了，是程序崩溃的隐患。为了避免此现象发生，```std::unique_ptr```很好的解决了这个问题，其**不提供智能指针的```=```操作，必须通过间接或显示的交出所有权（```std::move```, since c++11）**。
+上面的```std::auto_ptr```在复制构造或者```operator=```时，原先的对象就报废了，因为所有权转移到新对象去了，是程序崩溃的隐患。为了避免此现象发生，```std::unique_ptr```很好的解决了这个问题，其**不提供智能指针的```operator=```功能，必须通过间接或显示的交出所有权（```std::move```, since c++11）**。
 
 ```
 std::unique_ptr<Base> fetch_unique_ptr() {	std::unique_ptr<Base> ptr(new Base(55));	//ptr->info = "construct unique_ptr.";	return ptr;};
 
 int main(int argc, char * agrv[]) {
-	/* std::unqiue_ptr */	std::unique_ptr<Base> my_unique_ptr(new Base(44));	my_unique_ptr->info = "hello unique_ptr";	my_unique_ptr->PrintInfo();			// "info.c_str(), 44"	// [expirment] unique_ptr not support 'operator='	/*	std::unique_ptr<Base> my_unique_ptr2 = my_unique_ptr;	// error.	std::unique_ptr<Base> my_unique_ptr3(my_unique_ptr);	// error.	*/	std::unique_ptr<Base> my_unique_ptr3 = std::move(my_unique_ptr);	// ok	my_unique_ptr3->PrintInfo();		// "info.c_str(), 44"		std::unique_ptr<Base> my_unique_ptr4 = fetch_unique_ptr();	// ok. move construct.	my_unique_ptr4->PrintInfo();		// "info: construct unique_ptr, number: 55"	// [expirment] unique_ptr support vector element	std::unique_ptr<Base> my_unique_ptr5(new Base(66));	(*my_unique_ptr5).info = "hello vector!";	std::vector< std::unique_ptr<Base> > vec;	vec.push_back(std::move(my_unique_ptr5));	vec.at(0)->PrintInfo();	vec[0]->PrintInfo();
+	/* std::unqiue_ptr */	std::unique_ptr<Base> my_unique_ptr(new Base(44));	my_unique_ptr->info = "hello unique_ptr";	my_unique_ptr->PrintInfo();			// "info.c_str(), 44"	// [expirment] unique_ptr not support 'operator='	/*	std::unique_ptr<Base> my_unique_ptr2 = my_unique_ptr;	// error.	std::unique_ptr<Base> my_unique_ptr3(my_unique_ptr);	// error.	*/	std::unique_ptr<Base> my_unique_ptr3 = std::move(my_unique_ptr);	// ok	my_unique_ptr3->PrintInfo();		// "info.c_str(), 44"		std::unique_ptr<Base> my_unique_ptr4 = fetch_unique_ptr();	// ok. move construct.	my_unique_ptr4->PrintInfo();		// "info: construct unique_ptr, number: 55"	// [expirment] unique_ptr support vector element	std::unique_ptr<Base> my_unique_ptr5(new Base(66));	(*my_unique_ptr5).info = "hello vector!";	std::vector< std::unique_ptr<Base> > vec;	vec.push_back(std::move(my_unique_ptr5));  // std::move operator	vec.at(0)->PrintInfo();	vec[0]->PrintInfo();
 	// my_unique_ptr5->PrintInfo();		// error	return 0;}
 ```
 
 **std::unique_ptr几点说明：**
 
-1. 无法进行复制构造和赋值操作：意味着无法得到指向同一个对象的两个unique_ptr. 但提供了移动构造赋值和显示赋值功能。
-2. 为动态申请的内存提供异常安全；可以将动态申请内存的所有权传递给某个函数；从某个函数返回动态申请内存的所有权；
-3. 可以作为容器元素。
+1. **无法进行复制构造和赋值操作**：意味着无法得到指向同一个对象的两个unique_ptr. 但提供了移动构造赋值和显示赋值功能。
+2. **为动态申请的内存提供异常安全**: 可以将动态申请内存的所有权传递给某个函数；从某个函数返回动态申请内存的所有权；
+3. **可以作为容器元素**。
 
-```std::auto_ptr```和```std::unique_ptr```都是某一块内存独享所有权的智能指针。实际应用中会出现**某一块内存允许多个智能指针共享**，该当如何？下面的```std::shared_ptr```可以满足这个场景。
+```std::auto_ptr```和```std::unique_ptr```都是某一块内存独享所有权的智能指针。实际应用中会出现**某一块内存允许多个智能指针共享**，该当如何？下面的```std::shared_ptr```可以满足该场景。
 
 > 分布式机器学习评估模型指标，即计算auc, logloss等指标时，可以使用```std::shared_ptr```
 
@@ -260,7 +262,7 @@ int main(int argc, char * agrv[]) {
 ### std::bind
 
 --
-### [匿名函数（lambda表达式）](http://blog.csdn.net/augusdi/article/details/11773943)
+### [lambda (匿名函数) ](http://blog.csdn.net/augusdi/article/details/11773943)
 
 Lambda表达式具体形式：
 
@@ -293,7 +295,14 @@ Lambda表达式具体形式：
 [=]			// 用到的任何外部变量都隐式按值捕获
 [&, x]		// x显示地按值捕获。其它变量按引用捕获
 [=, &z]		// z按引用捕获，其它变量按值捕获
+[this]		// 表示值传递方式捕捉当前this指针
 ```
+
+关于捕捉列表几点说明：
+
+1. **捕捉列表不能重复传递**，比如 ```[=, a], [&, &this]```；
+2. **在块作用域之外的lambda函数捕捉列表必须为空**；
+3. **在块作用域内的lambda函数仅能捕捉父作用域内的自动变量**，非此作用域或者非自动变量（如静态变量）都会导致编译器出错。
 
 示例说明Lambda表达式用法:
 
@@ -305,9 +314,9 @@ std::for_each(begin(list), end(list), [&total](int x) {
 	total += x;
 });			// 计算list中所有元素的总和。
 ```
-变量total被存为lambda函数闭包的一部分。因为total是栈变量（局部变量）total的引用，所以可以改变它的值。
+变量total被存为lambda函数闭包的一部分。因为total是栈变量（局部变量），这里用total的引用，所以可以改变它的值。
 
-Lambda函数是一个依赖于实现的函数对象类型，这个类型的名字只有编译器知道。**如果用户想把Lambda函数做一个参数来传递，那么行参的类型必须是模版类型或者必须能创建一个```std::function```类似的对象去捕获lambda函数**。使用auto关键字可以帮助存储lambda函数。
+Lambda函数是一个依赖于实现的函数对象类型，这个类型的名字只有编译器知道。**如果用户想把Lambda函数做一个参数来传递，那么形参的类型必须是模版类型或者必须能创建一个```std::function```类似的对象去捕获lambda函数**。使用auto关键字可以帮助存储lambda函数。
 
 ```
 auto my_lambda_func = [&](int x) { /* ... */ };
@@ -368,9 +377,7 @@ int main(int argc, char* argv[])
 /home/zhouyong03/workplace/DiMLSys/third_party/root/lib/libdmlc.a(hdfs_filesys.o): In function `dmlc::io::HDFSFileSystem::HDFSFileSystem(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)':hdfs_filesys.cc:(.text+0xb1): undefined reference to `hdfsConnect'/home/zhouyong03/workplace/DiMLSys/third_party/root/lib/libdmlc.a(hdfs_filesys.o): In function `dmlc::io::HDFSFileSystem::GetPathInfo(dmlc::io::URI const&)':hdfs_filesys.cc:(.text+0xcd0): undefined reference to `hdfsGetPathInfo'hdfs_filesys.cc:(.text+0x143a): undefined reference to `hdfsFreeFileInfo
 ```
 
-编译dmlc-core时，发现是```hdfs_filesys.o```出现了问题，没有链接```hdfsConnect```这些库。
-
-解决办法：
+编译dmlc-core时，发现是```hdfs_filesys.o```出现了问题，没有链接```hdfsConnect```这些库。主要原因应该是编译时参数配置有问题，要编译出支持hdfs的dmlc-core需要认真研究dmlc-core的编译代码；
 
 
 
