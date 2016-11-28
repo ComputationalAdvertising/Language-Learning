@@ -75,8 +75,17 @@ ADMM算法结构天然地适用于分布式环境下具体任务的求解。在�
 
 $$
 \min_{w} \; \sum_{(x, y) \in \mathcal{D}} L(w^T x, y) + \lambda {\Vert w \Vert}_1 
-\; \overset{多任务联合学习}{\Longrightarrow}
+\; \overset{\text{任务分解}}{\Longrightarrow}
 \min_{w_1, \cdots, w_T; w} \sum_{t=1}^{T} \left( \sum_{(x,y) \in \mathcal{D}_t} L(w_t^T x, y) \right) + \lambda {\Vert w \Vert}_1 \qquad(diml.2.5.0)
+$$
+
+$$
+\min_{w} \; \sum_{(x, y) \in \mathcal{D}} L(w^T x, y) + \lambda {\Vert w \Vert}_1 
+\xrightarrow[\text{ADMM结构}]{任务分解} 
+\begin{align}
+\min_{w_1, w_2, \cdots, w_T} & \; \sum_{t=1}^{T} \left( \sum_{(x,y) \in \mathcal{D}_t} L(w_t^T x, y) \right) + \lambda{\Vert \theta \Vert}_1  \\\
+s.b. \quad & \; w_t=\theta \;(t=1,\cdots,T)
+\end{align} 
 $$
 
 公式$(diml.2.5.0)$是一个带正则项的模型优化目标（```"损失函数＋正则项"```），损失函数用\\(L(w^T x, y)\\)表示。其中，$\mathcal{D}$表示训练集，把$\mathcal{D}$切分为$T$个子数据集，每一块用$\mathcal{D_t}$表示；模型参数$w \in R^n，n$为特征维度，$\lambda$为正则项系数。箭头右边是改写为多任务形式的优化目标，其中参数$w$起到了连接不同子任务的作用，$\lambda$控制了多个子任务连接的强度，$\lambda$越大说明连接强度越强。当$\lambda = 0$时，等价于$T$个子任务独立学习，子任务之间没有关联。
@@ -216,19 +225,15 @@ $$
 \end{align}   \qquad\qquad(diml.2.5.5)
 $$
 
-拉格朗日函数：
+拉格朗日函数 与 参数更新公式：
 
 $$
-\mathcal{L}(x, \beta) = \sum_{t=1}^{T} \mathcal{L_t}(x_t, \beta) = \sum_{t=1}^{T} \left(f_t(x_t) + \beta^T A_t x_t - \frac{1}{T}\beta^T b \right)  \qquad(diml.2.5.6)
-$$
-
-对应的参数更新公式：
-
-$$
-\begin{align}
-x_{t}^{k+1} & := \arg \min_{x} \mathcal{L}_t(x_t,\beta^{k}) \qquad\qquad\qquad\quad\qquad(step1)\\\
-\beta^{k+1} & := \beta^{k} + \alpha^k \nabla g(\beta) = y^k + \alpha^k(A x^{k+1} -b)  \qquad\,(step2)
-\end{align} \qquad\qquad(diml.2.5.7)
+\mathcal{L}(x, \beta) = \sum_{t=1}^{T} \mathcal{L_t}(x_t, \beta) = \sum_{t=1}^{T} \left(f_t(x_t) + \beta^T A_t x_t - \frac{1}{T}\beta^T b \right) 
+\Longrightarrow 
+\begin{array}{lc}
+x_{t}^{k+1} := \arg \min_{x} \mathcal{L}_t(x_t,\beta^{k}) \qquad\qquad\qquad\quad(\text{1})\\\
+\beta^{k+1} := \beta^{k} + \alpha^k \nabla g(\beta) = y^k + \alpha^k(A x^{k+1} -b)  \;\;\,(\text{2})
+\end{array} \;(diml.2.5.7)
 $$
 
 > 公式$(diml.2.5.7)$解读：
@@ -272,7 +277,7 @@ $$
 
 > 公式解读：
 > 
->  
+>
 $$
 \mathcal{L}_{\rho}(x, \beta) = \overbrace{f(x)}^{原优化目标} + \overbrace{\underbrace{\frac{\rho}{2} {\Vert Ax-b \Vert}_2^2}_{二次惩罚项} + \underbrace{\beta^T(Ax-b)}_{拉格朗日乘子项} }^{增广拉格朗日乘子项}  \qquad (n.diml.2.5.3)
 $$
@@ -358,8 +363,8 @@ $$
 
 $$
 \begin{align}
-(x^{k+1}, z^{k+1}) & := \arg \min_{x,z} \mathcal{L}_{\rho}(x,z,\beta^k) \qquad\qquad(step1) \\\
-\beta^{k+1} & := \beta^k + \rho (Ax^{k+1} + Bz^{k+1} - C) \quad(step2)
+(x^{k+1}, z^{k+1}) & := \arg \min_{x,z} \mathcal{L}_{\rho}(x,z,\beta^k) \qquad\qquad(\text{step1}) \\\
+\beta^{k+1} & := \beta^k + \rho (Ax^{k+1} + Bz^{k+1} - C) \quad(\text{step2})
 \end{align}  \qquad(diml.2.5.15)
 $$
 
@@ -369,13 +374,13 @@ ADMM采用了拆分思想，最初就把\\(x\\)和\\(z\\)分别看作两个不�
 
 $$
 \begin{align}
-x^{k+1} & := \arg \min_x \mathcal{L}_{\rho}(x, z^{k}, \beta^k) \qquad\qquad (step1) \\\
-z^{k+1} & := \arg \min_z \mathcal{L}_{\rho}(x^{k+1}, z, \beta^k) \qquad\quad\; (step2) \\\ 
-\beta^{k+1} & := \beta^{k} + \rho(Ax^{k+1} + Bz^{k+1} - C) \quad\;\; (step3)
+x_t^{k+1} & := \arg \min_x \mathcal{L}_{\rho}(x, z^{k}, \beta^k) \qquad\qquad (\text{step1, 局部更新}) \\\
+z^{k+1} & := \arg \min_z \mathcal{L}_{\rho}(x^{k+1}, z, \beta^k) \qquad\quad\; (\text{step2, 全局更新}) \\\ 
+\beta_t^{k+1} & := \beta^{k} + \rho(Ax^{k+1} + Bz^{k+1} - C) \quad\;\; (\text{step3, 局部更新})
 \end{align}  \qquad\qquad(diml.2.5.16)
 $$
 
-ADMM算法拆分参数\\(x\\)和\\(z\\)两步迭代最大的好处是：**当\\(f\\)和\\(g\\)都可分时，参数可以并行求解。**
+ADMM算法拆分参数\\(x\\)和\\(z\\)两步迭代最大的好处是：**当\\(f\\)可分时，参数可以并行求解。**
 
 在[```chapter6_DiML_算法框架_学习器```]()中可以看到，ADMM这种参数和目标函数的拆分非常适合机器学习中的\\(\ell_1 \text{-norm}\\)优化问题，即：```loss function + regularization```目标函数的分布式求解。
 
@@ -389,7 +394,7 @@ ADMM算法拆分参数\\(x\\)和\\(z\\)两步迭代最大的好处是：**当\\(
 + $f(x)$和$g(z)$分别是扩展的实质函数：\\(R^{n}(R^{m}) \rightarrow R \; \cup {+\infty} \\), 并且是closed、proper和convex的；
 + 增广拉格朗日函数\\(\mathcal{L}_0\\)有一个鞍点（saddle point）；对于约束中的矩阵$A,B$都不需要满秩。
 
-在满足这两个假设条件下，可以保证残差、目标函数、对偶变量的收敛性。（具体证明参考[1] Appendix A）.
+满足两个假设条件下，可以保证残差、目标函数、对偶变量的收敛性。（详细证明过程参考paper Appendix A）.
 
 > 实际应用表明，ADMM算法收敛速度是很慢的，类似于共轭梯度法。迭代数十次可以得到一个可接受的结果，与快速的高精度算法（牛顿法、拟牛顿法、内点法等）相比收敛就满多了。因此实际应用中ADMM会与其它高精度算法结合其俩，这样从一个可接受的结果变得在预期时间内可以达到较高的收敛精度。
 > 
@@ -451,10 +456,10 @@ $$
 
 $$
 \begin{array}{lc}
-A = [A_1, A_2, \cdots, A_T], A_i \in R^{m \times n_i}; \\\ 
+A = [A_1, A_2, \cdots, A_T], A_i \in R^{m \times n_i} \\\ 
 x = (x_1, x_2, \cdots, x_T), x_i \in R^{n_i} 
 \end{array}
-\Longrightarrow
+\overset{数据和特征按列切分}{\Longrightarrow}
 \begin{array}{lc}
 Ax = \sum_{i=1}^{T} A_i x_i ; \\\
 g(x) = \sum_{i=1}^{T} g_i(x_i)
@@ -495,7 +500,7 @@ $$
 $$
 \begin{array}{lc}
 \min_{w} \quad \frac{1}{m} \sum_{i=1}^{m} \left(y^{(i)} - w^Tx^{(i)} \right)^2 + \lambda {\Vert w \Vert}_1
-\end{array} \qquad\qquad\qquad\qquad\quad (整体优化目标)\\\
+\end{array} \qquad\qquad\qquad\qquad\quad (整体优化目标)\\\ . \\\
 \overset{\text{ADMM}形式} {\Longrightarrow } \quad 
 \begin{array}{lc}
 \min_{w_1, w_2, \cdots, w_T} \quad \sum_{t=1}^{T} \left( \frac{1}{m_t} \sum_{i=1}^{m_t} \left(y_t^{(i)} - w_t^T x_t^{(i)} \right)^2 \right) + \lambda{\Vert \theta \Vert}_1  \\\
@@ -511,53 +516,24 @@ $$
 
 **参数迭代过程**
 
-+ 局部参数更新
++ 局部参数更新（worker节点）
 
 $$
 \begin{align}
-w_t^{k+1}  \longleftarrow \; & \arg\min_{w_t} \; \frac{1}{m_t}\; L(\mathbf{y}_t, \mathbf{x}_t w_t) + (\beta_t^k)^T w_t + \frac{\rho}{2} {\Vert w_t - \theta^k \Vert}_2^2 \qquad\qquad\;\;(1) \\\
+w_t^{k+1}  \longleftarrow \; & \arg\min_{w_t} \; \frac{1}{m_t}\; L(\mathbf{y}_t, \mathbf{x}_t w_t) + (\beta_t^k)^T w_t + \frac{\rho}{2} {\Vert w_t - \theta^k \Vert}_2^2 \qquad\qquad\quad(1) \\\
 \; & \arg\min_{w_t} \; \frac{1}{m_t}\; L(\mathbf{y}_t, \mathbf{x}_t w_t) + \frac{\rho}{2} {\Vert w_t - \theta^k + \frac{1}{\rho} \beta_t^k \Vert}_2^2
 \end{align}
 $$
 
-+ 全局参数更新
++ 全局参数更新（master节点）
 
 	$$
-\theta^{k+1} \longleftarrow \arg\min \; \lambda {\Vert \theta \Vert}_1 - \sum_{t=1}^{T} (\beta_t^k)^T \theta + \frac{\rho}{2} \sum_{t=1}^{T} {\Vert w_t^{k+1} - \theta \Vert}_2^2 \qquad\qquad(2)
+\theta^{k+1} \longleftarrow \arg\min_{\theta} \; \lambda {\Vert \theta \Vert}_1 - \sum_{t=1}^{T} (\beta_t^k)^T \theta + \frac{\rho}{2} \sum_{t=1}^{T} {\Vert w_t^{k+1} - \theta \Vert}_2^2 \qquad\qquad(2)
 	$$
 
-	> 推导如下. 优化目标函数，对\\(\theta\\)求偏导：
-	>
-$$
-\begin{align}
-\frac{\partial \, \mathcal{L}(w_t, \theta, \beta_t)} {\partial{\theta}} & ＝ \frac{\partial \; \left({\lambda {\vert \theta \vert}_1} - \sum_{t=1}^{T}(\beta_t)^T \theta + \frac{\rho}{2} \sum_{t=1}^{T} {\Vert w_t - \theta \Vert}_2^2 \right)} {\partial {\theta}} \\\
-& = \mathbf{sign}(\theta) \cdot \lambda - \sum_{t=1}^{T} \beta_t + {\rho} \sum_{t=1}^{T} \left(\theta - w_t \right) \\\
-& = \mathbf{sign}({\vert \theta \vert}_1) \cdot \frac{\lambda}{\rho} - \sum_{t=1}^{T} \left( \frac{\beta_t}{\rho} + w_t\right) + \sum_{t=1}^{T} \theta = 0 \\\
-\end{align}
-$$
->
-$$
-全局参数\theta更新公式整理得到：\mathbf{\underline{\theta = \frac{1}{T} \left(\sum_{t=1}^{T} 
-\left( \frac{\beta_t}{\rho} + w_t\right) - sign({\vert \theta \vert}_1) \cdot \frac{\lambda}{\rho} \right) }}
-$$
-> 说明：全局参数的更新公式中，有$\ell_{1}\text{-norm}$项需要求导。虽然在0处不可导，但是仍有解析解，这里使用软阈值的方法得到解析解：
->
-$$
-\theta =
-\begin{cases}
-\frac{1}{T} \left( \sum_{t=1}^{T} \left( \frac{\beta_t}{\rho} + w_t\right) + \frac{\lambda}{\rho}  \right) & \qquad \text{if} \; {\vert \theta \vert}_1 < 0, 若：\sum_{t=1}^{T} \left( \frac{\beta_t}{\rho} + w_t\right) + \frac{\lambda}{\rho} < 0. \\\
-\frac{1}{T}\left(\sum_{t=1}^{T}\left(\frac{\beta}{\rho} + w_t \right) - \frac{\lambda}{\rho} \right) & \qquad \text{if} \; {\vert \theta \vert}_1 > 0, 若：\sum_{t=1}^{T} \left( \frac{\beta_t}{\rho} + w_t\right) - \frac{\lambda}{\rho} > 0. \\\
-\; 0  & \qquad otherwise.
-\end{cases}
-$$
-> 
-> [软阈值（Soft-Thresholding）]()又称压缩算子（shrinkage operator）
-> 
-> 参数：\\(\lambda\\) 为L1正则项系数；\\(\beta_t\\)对偶变量（拉格朗日乘子）; \\(\theta\\)全局参数; \\(w_t\\)局部参数;
++ 对偶变量更新（worker节点）
 
-+ 局部对偶变量的更新
-
-$$
+	$$
 \begin{align}
 \beta_t^{k+1} \longleftarrow & \beta_t^k + \rho(w_t^{k+1} - \theta^{k+1}) \qquad\qquad\qquad\qquad\qquad\qquad\qquad\;\,(3)
 \end{align}  
@@ -565,9 +541,46 @@ $$
 
 迭代公式说明：
 
-+ 第1步：局部参数的更新。目标函数可以看作是```损失函数+L2正则项```(\\({\Vert w_t - const \Vert}_2^2\\))，局部参数更新涉及的参数有：\\((\theta, \beta_t, w_t)\\)；
-+ 第2步：全局参数的更新。需要详细推到，涉及到软阈值. 全局参数的更新涉及参数：\\((w_1,\cdots,w_n, \rho, \beta_1,\cdots,\beta_n,\lambda)\\)
-+ 第3步：局部对偶变量的更新。涉及参数：\\((\theta, \lambda, w_1,\cdots,w_n, \rho)\\)
++ 第1步：局部参数更新。目标函数可以看作是**```损失函数+L2正则项```**(\\({\Vert w_t - const \Vert}_2^2\\))，涉及参数：$(\theta, \beta_t, w_t)$；
++ 第2步：全局参数更新。需要详细推到，涉及到软阈值. 涉及参数：\\((w_1,\cdots,w_T, \rho, \beta_1,\cdots,\beta_T,\lambda)\\)
++ 第3步：局部对偶变量更新。涉及参数：\\((\theta, \lambda, w_1,\cdots,w_T, \rho)\\)
+
+这里涉及到一个worker节点参数与master节点参数通信问题，以及**master节点是如何利用worker局部参数更新全局参数的？**我们先看master节点参数更新推导过程。
+
+拉格朗日函数，对\\(\theta\\)求偏导：
+
+$$
+\begin{align}
+\frac{\partial \, \mathcal{L}(w_t, \theta, \beta_t)} {\partial{\theta}} & ＝ \frac{\partial \; \left({\lambda {\vert \theta \vert}_1} - \sum_{t=1}^{T}(\beta_t)^T \theta + \frac{\rho}{2} \sum_{t=1}^{T} {\Vert w_t - \theta \Vert}_2^2 \right)} {\partial {\theta}} \\\
+& = \mathbf{sign}(\theta) \cdot \lambda - \sum_{t=1}^{T} \beta_t + {\rho} \sum_{t=1}^{T} \left(\theta - w_t \right) \\\
+& = \mathbf{sign}({\vert \theta \vert}_1) \cdot \frac{\lambda}{\rho} - \sum_{t=1}^{T} \left( \frac{\beta_t}{\rho} + w_t\right) + \sum_{t=1}^{T} \theta = 0 \\\
+\end{align}
+$$
+
+$$
+全局参数\theta更新公式整理得到：\underline{\color{blue}{ \theta } = \frac{1}{T} \left(\sum_{t=1}^{T} 
+\left(\color{red} { \frac{\beta_t}{\rho} + w_t } \right)  - sign({\vert \theta \vert}_1) \cdot \frac{\lambda}{\rho} \right) }
+$$
+
+说明：全局参数更新时，$\ell_{1}\text{-norm}$项需要求导。虽然在0处不可导，但仍有解析解，这里使用**[软阈值]()**的方法得到解析解：
+
+$$
+\color{blue}{\theta} =
+\begin{cases}
+\frac{1}{T} \left( \sum_{t=1}^{T} \left( \color{red}{\frac{\beta_t}{\rho} + w_t}\right) + \frac{\lambda}{\rho}  \right) & \qquad \text{if} \; {\vert \theta \vert}_1 < 0, 若：\sum_{t=1}^{T} \left( \frac{\beta_t}{\rho} + w_t\right) + \frac{\lambda}{\rho} < 0 ; \\\
+\frac{1}{T}\left(\sum_{t=1}^{T}\left(\color{red}{\frac{\beta_t}{\rho} + w_t} \right) - \frac{\lambda}{\rho} \right) & \qquad \text{if} \; {\vert \theta \vert}_1 > 0, 若：\sum_{t=1}^{T} \left( \frac{\beta_t}{\rho} + w_t\right) - \frac{\lambda}{\rho} > 0 ; \\\
+\; 0  & \qquad \text{otherwise}.
+\end{cases}
+$$
+
+参数：\\(\lambda\\) 为$L_1$正则项系数；\\(\beta_t\\)对偶变量（拉格朗日乘子）; \\(\theta\\)全局参数; \\(w_t\\)局部参数;
+
+公式中的红色区域是worker向master传递的传递参数，这一步称为merge过程（在MPI对应allreduce操作，Hadoop对应reduce过程）；蓝色区域（全局参数）是master向所有
+
+
+> [软阈值（Soft-Thresholding）]()又称压缩算子（shrinkage operator）
+> 
+
 
 #### 受约束的凸优化问题
 
