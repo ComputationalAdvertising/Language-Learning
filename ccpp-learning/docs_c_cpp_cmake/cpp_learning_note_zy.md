@@ -363,7 +363,7 @@ int main(int argc, char* argv[])
 ## 那些坑儿
 
 --
-### [```undefined reference to `...` ```](http://blog.csdn.net/jfkidear/article/details/8276203)
+### 1. [```undefined reference to `...` ```](http://blog.csdn.net/jfkidear/article/details/8276203)
 
 异常示例1：```undefined reference to `dmlc::Config::Config(std::istream&, bool)' ```
 
@@ -378,6 +378,37 @@ int main(int argc, char* argv[])
 ```
 
 编译dmlc-core时，发现是```hdfs_filesys.o```出现了问题，没有链接```hdfsConnect```这些库。主要原因应该是编译时参数配置有问题，要编译出支持hdfs的dmlc-core需要认真研究dmlc-core的编译代码；
+
+异常示例3: ``` undefined reference to `omp_get_num_procs` ```
+
+主要原因是使用了OpenMP，但编译时没有配置OpenMP相关编译环境，需要在CMakeLists.txt中配置```find_package(OpenMP); set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")```条件。
+
+使用OpenMP时，需要在CMake文件中 添加 **编译环境代码**，即：```set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")```.
+
+因此，出现```undefined reference to `...` ```问题时，通常有如下原因：
+
+1. 检查include头文件是否存在，如果没有需要添加```include_directories()```
+2. 检查相应的链接库是否存在，如果没有需要```target_link_libraries(${exec_name} dmlc)```;
+3. 检查对应的编译环境是否确实，比如pthread, OpenMP都需要在g++编译时，添加对应的编译环境。
+
+--
+### 2. [... error while loading shared libraries: *.so : cannot open shared object file: No such file or directory](http://blog.csdn.net/sahusoft/article/details/7388617)
+
+错误提示程序执行时无法加载共享库```*.so```，可能不存在或者没有找到。
+
+解决方案：
+
+1. 首先，用```locate *.so```命令检查共享库是否存在，存过不存在，需要网上下载和安装。如果存在，进入第二步
+2. 将```*.so```所对应的目录加入```LD_LIBRARY_PATH```路径中，举例操作：
+
+```
+LD_LIBRARY_PATH=${JAVA_HOME}/jre/lib/amd64/servier:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH
+```
+
+需要配置：```export LD_LIBRARY_PATH=/usr/local/mysql/lib:$LD_LIBRARY_PATH```.
+
+上面的配置在MakeFile中可以直接找到对应的环境变量。在CMakeLists中如何使用呢？ cmake使用环境变量需要使用```ENV```关键词。即: ```$ENV{LD_LIBRARY_PATH}```
 
 
 
