@@ -12,7 +12,9 @@ tags:
 
 + author: zhouyongsdzh@foxmail.com
 + date: 2016-03-29
-+ weibo: [@周永_52diml](http://weibo.com/p/1005051707438033/home?)
++ weibo: [@周永_52ML](http://weibo.com/p/1005051707438033/home?)
+
+[站内跳转](#1)
 
 **ADMM相关问题：**
 
@@ -75,7 +77,7 @@ ADMM算法结构天然地适用于分布式环境下具体任务的求解。在�
 
 $$
 \min_{w} \; \sum_{(x, y) \in \mathcal{D}} L(w^T x, y) + \lambda {\Vert w \Vert}_1 
-\; \overset{\text{任务分解}}{\Longrightarrow}
+\; \overset{\text{任务分解}}{\Longrightarrow} 
 \min_{w_1, \cdots, w_T; w} \sum_{t=1}^{T} \left( \sum_{(x,y) \in \mathcal{D}_t} L(w_t^T x, y) \right) + \lambda {\Vert w \Vert}_1 \qquad(diml.2.5.0)
 $$
 
@@ -606,4 +608,6 @@ generalized lasso, group lasso, 高斯图模型，Tensor型图模型等问题的
 ### 参考资料
 
 + [分布式计算、统计学习与ADMM算法](http://joegaotao.github.io/cn/2014/02/admm/)
+
+<h2 id = "1">持续更新中</h2>
 

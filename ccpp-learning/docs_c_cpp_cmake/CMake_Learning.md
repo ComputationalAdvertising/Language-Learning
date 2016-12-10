@@ -1,7 +1,18 @@
-## CMake Learning
+## CMake && MakeFile Learning
 
 + author: zhouyongsdzh@foxmail.com
 + date: 20160516
+
+### cmake与makefile语法对应关系
+
+| 功能 | cmake | makefile | 说明 |
+| --- | --- | --- | --- |
+| C编译器 | `set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC ...)` | `CFLAGS += -fPIC ...` | C编译器选项 |
+| C++编译器 | `set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wall -pthread ...)` | `CXXFLAGS += -fPIC -Wall -pthread...` | C++编译器选项 |
+| 添加include | `include_directories(${dir} ...)` | `CXXFLAGS += -I$(dir) ...` | makefile在`CXXFLAGS`里添加 | 
+| 添加lib目录 | `link_directories(${dir} ...)` | `LDFLAGS += -L$(dir) ...` | 多个目录用空格分开 |
+| 指定依赖库 | `target_link_libraries(${exec_name} ${lib1} ${lib2} ...)` | `LIBS += -l$(lib1) ...` | 多个依赖库用空格分开 | 
+
 
 ### 0. 关于cmake
 
