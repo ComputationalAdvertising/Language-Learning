@@ -6,7 +6,11 @@
 ### 目录
 
 --
-#### 基础知识
+#### [1. 基础知识]()
++ [1.1. C++关键字]()
++ [1.2. IO系统]()
++ [1.3. 数据类型]()
+    + [struct](); 
 + namespace
 + io系统
 + struct
@@ -250,6 +254,8 @@ int main(int argc, char * agrv[]) {
 > 分布式机器学习评估模型指标，即计算auc, logloss等指标时，可以使用```std::shared_ptr```
 
 #### [```shared_ptr```](http://www.cplusplus.com/reference/memory/shared_ptr/?kw=shared_ptr)
+
++ [reset](http://www.cplusplus.com/reference/memory/shared_ptr/reset/)：重新设置指针。`ptr_.reset(data, del)`
 
 
 --

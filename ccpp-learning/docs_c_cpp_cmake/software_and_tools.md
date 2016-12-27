@@ -10,15 +10,20 @@
 
 ### 目录
 
-+ 工具
-	+ vim
-	+ terminator
-	+ subtime3与插件
++ 1. 工具
+	+ 1.1. vim
+	+ 1.2. terminator
+	+ 1.3. subtime3与插件 
+	+ [1.4. protobuf](#1.4.protobuf)
 	
 + 软件与程序
-	+ 2.1 cmake	
-	+ 2.2 OpenMP
+	+ 2.1. cmake	
+	+ 2.2. openmp
+	+ [2.3. m4/autoconf/automake/pkg-config]()
 
+	
+
+ 
 
 ### 工具: vim
 
@@ -53,12 +58,83 @@ mac上安装，`command + shift + p`搜索‘install’后，分别选择`Markdo
 
 
 subtime3上安装markdown插件，参考链接：http://www.cnblogs.com/IPrograming/p/Sublime-markdown-editor.html
-### 2.1. 软件与程序：CMake 
+
+**因为macdown可以正常使用业内跳转，所以subtime3+markdown插件没有使用**。 
+
+
+<h4 id="1.4.protobuf">1.4. protobuf</h4>
+---mac环境安装：1. 下载最新版本：[protobuf-3.1.0.tar.gz](https://github.com/google/protobuf/archive/v3.1.0.tar.gz)  ([protobuf-2.6.1.tar.gz](https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.tar.gz)不支持map结构，所以最好安装最新版本)
+
+2. 解压与安装 
+    
+    v3.0.0以上版本使用automake最为构建工具，首先要检查是否已经安装autoconf/automake/libtool三个工具。`which automake`. 如果没有需要安装：`brew install autoconf automake libtool`.
+    
+    ```
+    tar -zxvf ~/software/protobuf-3.1.0.tar.gz
+    ./autogen.sh
+    ./configure --prefix=/usr/local/third_party/protobuf-3.1.0
+    make && make check && make install
+    ```
+3. 环境配置
+    
+    在 ~/.zshrc后面添加：
+
+    ```
+    PROTOBUF_HOME=/usr/local/third_party/protobuf-3.1.0 
+    export PATH=${PROTOBUF_HOME}/bin:${PATH}
+    export LD_LIBRARY_PATH=${PROTOBUF_HOME}/lib:$LD_LIBRARY_PATH
+    ```
+4. 验证安装：`which protoc` / `protoc --version`
+
+Intellij IDEA 安装 Protobuf 插件
+
+1. 进入`Preferences -> Plugins -> Browse repositories`，搜索`Google Protocal Buffer Support` 安装后重启；
+2. 配置路径。PB插件安装完毕之后，需要为插件配置 PB 的编译路径，也就是在上一步中我们安装的 protoc。`Preferences -> Build,Execution,Deployment -> Compiler -> 填充/usr/local/third_party/protobuf-3.1.0/bin/protoc` 如此插件配置完成。
+3. 如何在项目中使用 PB 插件来快速生成 Java 文件？
+    
+    + 进入`File -> Project Structure -> Facets添加Protobuf Facets`;
+    + 然后点击`Modules`在`Protobuf Facets`对应的`Output source directory`填写`src/main/java`对应的绝对路径；
+    + 根据PB描述文件，生成Java文件：
+        
+        ```
+        syntax = "proto3";
+
+        option java_package = "com.dianping.midas.mtad.offline.protobuf";
+        option java_outer_classname = "CtrProto";
+
+        message CtrInfo {
+            int32 imp = 1;       // impression nums
+            int32 clk = 2;       // click nums
+            double ctr = 3;    // click throght rate
+        }
+        ```
+        右键选择`Compiler *.proto`即可在指定的package中看到java文件。
+
+参考地址：http://zhuliangliang.me/2015/01/12/protobuf_in_java/
+
+**⚠️：java使用bp时一定要保证版本一致性，要么全用proto2，要么全用proto3. 我这里因为要用到map结构，所以全部用proto3(包括语法、pb-java版本和protoc).**
+### 2. 软件### 2.1. cmake
 
 1. 安装： ```sudo apt-get install cmake```
 
-### 2.2. 软件与程序：OpenMP 
+### 2.2. openmp 
 	
 
+### 2.3. 
+
+4. 安装pkg-config
+
+    下载最新版本：https://pkg-config.freedesktop.org/releases/pkg-config-0.29.tar.gz
+    
+    ```
+    tar -zxvf ~/software/pkg-config-0.29.tar.gz
+    ./configure --with-internal-glib --prefix=/usr/local/third_party/pkg-config/0.29
+    make && make install
+    ```
+    
+    环境配置：(mac) ~/.zshrc 添加``
+    
+    
+    
 
 
