@@ -15,11 +15,13 @@
 	+ 1.2. terminator
 	+ 1.3. subtime3与插件 
 	+ [1.4. protobuf](#1.4.protobuf)
+	+ [1.5. atom](#1.5.atom)
 	
 + 软件与程序
-	+ 2.1. cmake	
+	+ [2.1. cmake](#2.1.cmake)
+	   + http://www.linuxidc.com/Linux/2014-02/97363.htm
 	+ 2.2. openmp
-	+ [2.3. m4/autoconf/automake/pkg-config]()
+	+ [2.3. m4/autoconf/automake/pkg-config](#2.3.automake)
 
 	
 
@@ -113,14 +115,36 @@ Intellij IDEA 安装 Protobuf 插件
 参考地址：http://zhuliangliang.me/2015/01/12/protobuf_in_java/
 
 **⚠️：java使用bp时一定要保证版本一致性，要么全用proto2，要么全用proto3. 我这里因为要用到map结构，所以全部用proto3(包括语法、pb-java版本和protoc).**
-### 2. 软件### 2.1. cmake
+
+<h4 id="1.5.atom">1.5. atom</h4>
+---
+
+mac安装:
+
+```
+1. 下载：https://atom.io/download/mac
+2. 
+```### 2. 软件### 2.1. cmake
 
 1. 安装： ```sudo apt-get install cmake```
 
 ### 2.2. openmp 
 	
 
-### 2.3. 
+### 2.3. m4/autoconf/automake/pkg-config
+
+安装`automake`相关构建工具，需要执行：
+
+```
+# ubuntu下面
+sudo apt-get install autoconf  (ubuntu)
+sudo apt-get install libtool (ubuntu)
+# centos下面
+sudo yum install autoconf (centos)
+sudo yum install libtool (centos)
+```
+
+
 
 4. 安装pkg-config
 

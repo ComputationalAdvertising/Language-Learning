@@ -4,44 +4,44 @@
 + date: 20160829
 
 ### 目录
-
 --
-#### [1. 基础知识]()
-+ [1.1. C++关键字]()
-+ [1.2. IO系统]()
-+ [1.3. 数据类型]()
-    + [struct](); 
-+ namespace
-+ io系统
-+ struct
-+ random
 
+#### [1. 基础知识](#1.基础知识)
 
-#### 数据结构与算法
-+ string
-+ vector
-+ sort
-+ math
++ [1.1. C++关键字](#1.1.C++关键字)
 
-#### C++特性
-+ class与继承
-+ virtual虚函数
-+ 智能指针
+    |[[namespace](#1.1.1.namespace)]|[[typedef](#1.1.2.typedef)]|[[template](#1.1.3.template)]|
+    | --- | --- | --- |
++ [1.2. IO系统](#1.2.IO系统) 
 
-#### C++11新特性
-+ std::functional
-+ std::bind
-+ 匿名函数（lambda表达式）
+#### 2. 数据结构与算法
 
-#### 那些坑儿
+| [[string](#2.1.string)]| [[vector](#2.2.vector)]| [[iterator](#2.3.iterator)] | [[map](#2.4.map)] | [[struct](#2.5.struct)] | [[math](#2.6.math)] | [[sort](#2.7.sort)] |
+| --- | --- | --- | --- | --- | --- | --- |
+
+#### 3. C++特性
+
+| [[class]()] | [[virtual]()] | [[smart_ptr]()] |
+| --- | --- | --- |
+
+#### 4. C++11新特性
+
+| [[std::functional]()] | [[std::bind]()] | [[lambda]()]
+| --- | --- | --- |
+
+#### 5. 那些坑儿
 
 + **```undefined reference to `...` ```**
 
 
+<h2 id="1.基础知识">1. 基础知识</h2> 
 ---
-### 基础知识
 
-#### namespace 使用
+<h3 id="1.1.C++关键字">1.1. C++关键字</h3> 
+---
+
+<h4 id="1.1.1.namespace">1.1.1. namespace</h4> 
+---
 
 命名空间(namespace)是一种描述逻辑分组的机制，可以将按某些标准在逻辑上属于同一个任务中的所有类声明放在同一个命名空间中。标准C++库（不包括标准C库）中所包含的所有内容（包括常量、变量、结构、类和函数等）都被定义在命名空 间std（standard标准）中了。
 
@@ -68,7 +68,7 @@ out.h
 // 定义外部命名空间：outer
 namespace outer {
        	int i;
-       	namespace inner {      	// 定义子命名空间：inner。⚠️：字命名空间只能定义 不能声明。
+       	namespace inner {      	// 定义子命名空间：inner。⚠️：子命名空间只能定义 不能声明。
        		void f() {     		// inner成员f的定义，其中的i为outer::i. 注意先后顺序。
        			i++;   		// outer::i
        		}
