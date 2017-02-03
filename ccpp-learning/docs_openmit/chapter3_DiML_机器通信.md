@@ -21,10 +21,10 @@ tags:
 + [3. 同步通信-Rabit](#3.同步通信-Rabit)
     + [3.1. 功能](#3.1.功能)
     + [3.2. 容错机制](#3.2.容错机制) 
-    + [3.3. 使用示例](#3.3.使用示例)
+    + [3.3. 应用示例](#3.3.应用示例)
 + [4. 异步通信-Parameter Server](#4.异步通信-Parameter-Server)
     + [4.1. 工作原理](#4.1.工作原理)
-    + [4.2. 使用示例](#4.2.使用示例) 
+    + [4.2. 应用场景](#4.2.应用场景) 
 + [5. OpenMIT与机器通信](#5.OpenMIT与机器通信)
     + [5.1. MPI、Rabit和PS比较](#5.1.MPI-Rabit和PS比较) 
     + [5.2. OpenMIT与机器通信](#5.2.OpenMIT与机器通信)
@@ -62,7 +62,7 @@ Rabit的容错过程不同于`失败-重启`策略（任一节点失败后，所
 
 上述仅仅是对rabit容错机制的概念性介绍。实现时会更复杂，因为需要处理更复杂的场景，比如多个节点同时失败、在节点恢复节点再次失败等。
 
-<h4 id="3.3.使用示例">3.3. 使用示例</h4>
+<h4 id="3.3.应用示例">3.3. 应用示例</h4>
 ---
 
 + 单机模拟多个workers执行rabit程序
@@ -71,3 +71,53 @@ Rabit的容错过程不同于`失败-重启`策略（任一节点失败后，所
 cd ${rabit_dir}/guide && make   // 生成basic.rabit
 ../tracker/rabit_demo.py -n 2 basic.rabit
 ```
+
+<h3 id="4.异步通信-Parameter-Server">4. 异步通信-Parameter Server</h3>
+--
+
+
+<h4 id="4.2.应用场景">4.2. 应用场景</h4>
+---
+
+PS非常适合解决分布式优化问题中的参数通信问题，假设我们要优化的问题如下：
+
+$$
+\min_w \quad \sum_{i=1}^m \; f(x^{(i)}, y^{(i)})
+$$
+
+其中，\\((x^{(i)}, y^{(i)})\\)表示样本特征和label，\\(w\\)是参数权重。我们考虑用mini-batch SGD方法求解参数，每个batch样本数为b个。在\\(t\\)时刻，算法首先随机挑选b个样本，利用下面的公式更新权重\\(w\\)：
+
+$$
+w \longleftarrow w - \eta_t \sum_{i=1}^b \nabla f(x^{k_i}, y^{k_i}, w)
+$$
+
+下面通过两个示例来说明ps-lite是如何完成分布式优化算法的。
+
++ 异步SGD
+
+首先看异步SGD是如何工作的？我们让servers的个数保持w个，其中第k个server保存参数w的一部分，用\\(w_{k<|sub>}\\)表示。一旦从worker接受梯度值，server k更新该部分参数：
+
+```
+t = 0;
+while (Received(&grad)) {
+  w_k -= eta(t) * grad;
+  t++;
+}
+```
+
+如果接受的梯度来自任意的worker节点，那么函数`received`将返回true???。\\(eta\\)将返回在t时刻的学习率。
+
+然而对于worker节点，在每个时刻它将做下面4件事：
+
+```
+Read(&X, &Y);       // read a minibatch X and Y
+Pull(&w);           // pull the recent weight from the servers
+ComputeGrad(X, Y, w, &grad);    // compute the gradient
+Push(grad);         // push the gradients to the servers
+```
+
+ps-lite在这个过程中将发挥什么作用呢？ps-lite将提供`push`和`pull`功能，这两个函数将在servers之间通信获取对应的参数数据。
+
+> 注意：
+
++ 同步SGD

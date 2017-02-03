@@ -3,6 +3,13 @@
 + author: zhouyongsdzh@foxmail.com
 + date: 20160829
 
+
+issue:
+
+1. explicit关键字
+2. static_cast/dynamic_cast使用场景
+3. &, * 在参数调用中的使用场景
+
 ### 目录
 --
 
@@ -19,9 +26,9 @@
 | [[string](#2.1.string)]| [[vector](#2.2.vector)]| [[iterator](#2.3.iterator)] | [[map](#2.4.map)] | [[struct](#2.5.struct)] | [[math](#2.6.math)] | [[sort](#2.7.sort)] |
 | --- | --- | --- | --- | --- | --- | --- |
 
-#### 3. C++特性
+#### [3. C++特性](#3.C++特性)
 
-| [[class]()] | [[virtual]()] | [[smart_ptr]()] |
+| [[class]()] | [[virtual]()] | [[smart_ptr](#3.3.smart_ptr)] |
 | --- | --- | --- |
 
 #### 4. C++11新特性
@@ -35,13 +42,13 @@
 
 
 <h2 id="1.基础知识">1. 基础知识</h2> 
----
+
 
 <h3 id="1.1.C++关键字">1.1. C++关键字</h3> 
----
+
 
 <h4 id="1.1.1.namespace">1.1.1. namespace</h4> 
----
+
 
 命名空间(namespace)是一种描述逻辑分组的机制，可以将按某些标准在逻辑上属于同一个任务中的所有类声明放在同一个命名空间中。标准C++库（不包括标准C库）中所包含的所有内容（包括常量、变量、结构、类和函数等）都被定义在命名空 间std（standard标准）中了。
 
@@ -152,11 +159,14 @@ std::uniform_int_distribution<int> uni_dist(0, 99999);  // 指定范围的随机
 std::cout << uni_dist(rd) << std::endl;
 ```
 
---
-## C++特性
+<h2 id="3.C++特性">3. C++特性</h2>
 
---
-### [智能指针](http://blog.csdn.net/xt_xiaotian/article/details/5714477)
+
+参考[智能指针](http://blog.csdn.net/xt_xiaotian/article/details/5714477)
+
+<h4 id="3.3.smart_ptr">3.3. smart_ptr</h4> 
+
+
 
 为什么要存在智能指针？为什么要使用智能指针？博客[智能指针的作用与原理](http://blog.csdn.net/chen825919148/article/details/8155411)已经讲解的很清楚。
 
