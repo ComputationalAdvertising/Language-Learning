@@ -6,7 +6,6 @@
 
 issue:
 
-1. explicit关键字
 2. static_cast/dynamic_cast使用场景
 3. &, * 在参数调用中的使用场景
 
@@ -17,14 +16,15 @@ issue:
 
 + [1.1. C++关键字](#1.1.C++关键字)
 
-    |[[namespace](#1.1.1.namespace)]|[[typedef](#1.1.2.typedef)]|[[template](#1.1.3.template)]|
-    | --- | --- | --- |
+    |[[namespace](#1.1.1.namespace)]|[[typedef](#1.1.2.typedef)]|[[template](#1.1.3.template)]| [[explicit](#1.1.4.explicit)]
+    | --- | --- | --- | --- |
+    
 + [1.2. IO系统](#1.2.IO系统) 
 
-#### 2. 数据结构与算法
+#### [2. 数据结构与算法](#2.数据结构与算法)
 
-| [[string](#2.1.string)]| [[vector](#2.2.vector)]| [[iterator](#2.3.iterator)] | [[map](#2.4.map)] | [[struct](#2.5.struct)] | [[math](#2.6.math)] | [[sort](#2.7.sort)] |
-| --- | --- | --- | --- | --- | --- | --- |
+| [[string](#2.1.string)]| [[vector](#2.2.vector)]| [[iterator](#2.3.iterator)] | [[map](#2.4.map)] | [[struct](#2.5.struct)] | [[math](#2.6.math)] | [[sort](#2.7.sort)] | [[random](#2.8.random)]
+| --- | --- | --- | --- | --- | --- | --- | --- |
 
 #### [3. C++特性](#3.C++特性)
 
@@ -56,7 +56,7 @@ issue:
 
 有两种形式的命名空间——有名的和无名的。命名空间的定义格式为：
 
-```
+```c++
 namespace 命名空间名 {	// 有名
 	// 声明序列可选，可包含常量、变量、结构、类、函数等;
 }
@@ -70,7 +70,7 @@ namespace {				//无名
 
 命名空间的成员，是在命名空间定义中的花括号内声明了名称。可以在命名空间的定义内，定义命名空间 的成员（内部定义）。也可以只在命名空间的定义内声明成员，而在命名空间的定义之外，定义命名空间的成员（外部定义）。 举例：
 
-```
+```c++
 out.h
 // 定义外部命名空间：outer
 namespace outer {
@@ -103,7 +103,7 @@ namespace outer {
 
 也不能直接使用“命名空间名::成员名 ……”定义方式，为命名空间添加新成员，而必须先在命名空间的定义中添加新成员的声明。另外，命名空间是开放的，即可以随时把新的成员名称加入到已有的命 名空间之中去。方法是，多次声明和 定义同一命名空间，每次添加自己的新成员和名称。例如：
 
-```
+```c++
 namespace A {
 	int i;
 	void f();
@@ -117,7 +117,7 @@ namespace A {
 
 +  namespace示例. out.cpp内容：
 
-```
+```c++
 #include "out.h"
 #include "out_cp.h"
 #include <iostream>
@@ -143,7 +143,40 @@ int main(int argc, char* argv[])
 
 ```
 
+<h4 id="1.1.4.explicit">1.1.4. explicit</h4>
+
+C++中的explicit关键字只能用于**修饰只有一个参数的类构造函数**, 它的作用是表明该构造函数是显示的, 而非隐式的；与之对应的关键字是**implicit**.
+
+显示声明的构造函数和隐式声明的有何区别呢？先看一个隐式声明的例子（未使用explicit即默认为隐式声明）：
+
+```c++
+#include <malloc.h>#include <cstring>#include <iostream>using namespace std;
+class NonExplicit {  public:    char * pstr_;    int size_;    NonExplicit(int size) {      std::cout << "NonExplicit pre-malloc " << size << " byte space." << std::endl;      size_ = size;      pstr_ = (char *)malloc(size_ + 1);      memset(pstr_, 0, size + 1);    }    NonExplicit(const char * ch) {      std::cout << "NonExplicit " << ch << ", strlen:" << strlen(ch) << std::endl;      int size = strlen(ch);      pstr_ = (char *)malloc(size + 1);      strcpy(pstr_, ch);      size_ = strlen(pstr_);    }    ~NonExplicit() {       std::cout << "~NonExplicit. pstr_: " << pstr_ << std::endl;      //free(pstr_);  // may be issue:  double free or corruption (fasttop);    }};int main(int argc, char * argv[]) {  // ---- non explicit ----  NonExplicit ne1(24);      // ok  NonExplicit ne2 = 10;     // ok  //NonExplicit ne3;          // failure. not found constructor function matched  NonExplicit ne4("aaaa");  // ok  NonExplicit ne5 = "bbbb"; // ok  NonExplicit ne6 = 'a';    // ok, convert to 'a' ascii code.  ne4 = "ccccccccccc";  ne5 = "xxxxxxx";}
+```
+
+代码中，`NonExplicit ne2 = 10;`为什么可以呢？因为在c++中，如果构造函数只有一个参数时，那么在编译的时候会有一**个缺省的转换操作**：将该构造函数对应数据类型的数据转化为该类对象。这里，编译器自动将整型转换为NonExplicit类对象，即`NonExplicit ne2(10);`
+
+`NonExplicit ne2 = 10;`和`NonExplicit ne6 = 'a';初始化类显得不伦不类，容易让人疑惑，有什么办法可以阻止这种用法呢？答案就是使用`explicit`关键字。把上面的代码修改如下：
+
+> **注意⚠**：在拷贝构造函数或者拷贝赋值运算符实现时，若不注意，容易出现`double free or corruption (fasttop)`的问题；
+
+```c++
+#include <malloc.h>#include <cstring>#include <iostream>using namespace std;
+class Explicit {  public:    char * pstr_;    int size_;    explicit Explicit(int size) {		// 使用关键字explicit的类声明, 显示转换       std::cout << "Explicit pre-malloc " << size << " byte space." << std::endl;      size_ = size;      pstr_ = (char *)malloc(size_ + 1);      memset(pstr_, 0, size + 1);    }    Explicit(const char * ch) {      std::cout << "Explicit " << ch << ", strlen:" << strlen(ch) << std::endl;      int size = strlen(ch);      pstr_ = (char *)malloc(size + 1);      strcpy(pstr_, ch);      size_ = strlen(pstr_);    }    ~Explicit() {       std::cout << "~Explicit. pstr_: " << pstr_ << std::endl;      //free(pstr_);  // may be issue:  double free or corruption (fasttop);    }};int main(int argc, char * argv[]) {  // ---- explicit ----  Explicit e1(24);      // ok  //Explicit e2 = 10;     // no. explicit取消了隐式转换  //NonExplicit e3;          // failure. not found constructor function matched  Explicit e4("aaaa");  // ok  //Explicit e5 = "bbbb"; // no. must be explicit using constructor  //Explicit e6 = 'a';    // no. must be explicit using constructor
+  e3 = e1;				  // no. 因为取消了隐式转换，除非类实现操作符"="的重载}
+```
+
+**explicit关键字的作用就是防止类构造函数的隐式自动转换**. 
+
+explicit关键字只对有一个参数的类构造函数有效, 如果类构造函数参数大于或等于两个时, 是不会产生隐式转换的, 所以explicit关键字也就无效了。
+
+但是, 也有一个例外, 就是当除了第一个参数以外的其他参数都有默认值的时候, explicit关键字依然有效, 此时, 当调用构造函数时只传入一个参数, 等效于只有一个参数的类构造函数。
+
 ### io系统
+
+<h2 id="2.数据结构与算法">2. 数据结构与算法</h2>
+
+<h3 id="2.2.vector">2.2. vector</h3>
 
 ### struct结构体
 
