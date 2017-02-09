@@ -186,7 +186,7 @@ http://blog.csdn.net/x356982611/article/details/50909142
 
 C++11引入的伪随机数发生器，随机数抽象成生成器和分布器两部分。生成器用来产生随机数，分布器用来生成特征分布的随机数。示例：
 
-```
+```c++
 std::random_device rd;		// 生成一个随机数作为种子
 std::uniform_int_distribution<int> uni_dist(0, 99999);  // 指定范围的随机数发生器
 std::cout << uni_dist(rd) << std::endl;
@@ -243,7 +243,7 @@ Animal a = new Animal(); Animal b = a;
 
 示例类：
 
-```
+```c++
 class Base {	public:		Base(int param = 0) {			number_ = param;			std::cout << "Create Base Object. number_: " << number_ << std::endl;		}		~Base() { std::cout << "~Base: " << number_ << std::endl; }		void PrintInfo() { std::cout << "PrintInfo: " << info.c_str() << std::endl; }		std::string info;		int number_;};class Derived : public Base {	public:		Derived(int param) { std::cout << "Create Derived" << std::endl; }		~Derived() { std::cout << "~Derived" << std::endl; }};
 ```
 
@@ -262,7 +262,7 @@ warning: ‘template<class> class std::auto_ptr’ is deprecated [-Wdeprecated
 
 示例：
 
-```
+```c++
 int main(int argc, char * agrv[]) {	/* std::auto_ptr */	std::auto_ptr<Base> my_auto_ptr(new Base(11));	// create object. output: 11	if (my_auto_ptr.get()) {					// judge smart_ptr is null		my_auto_ptr->PrintInfo();				// use operator-> to call function of ptr-object		my_auto_ptr->info = "hello auto_ptr";	// use operator= to assign value		my_auto_ptr->PrintInfo();		(*my_auto_ptr).info += "!!!!!";			// use operator* return inner object, then use '.' to call func		my_auto_ptr->PrintInfo();	} else {		std::cout << "my_auto_ptr is null" << std::endl;	}	// [expirment] auto_ptr: object copy	if (my_auto_ptr.get()) {		std::auto_ptr<Base> my_auto_ptr2(new Base(22));		my_auto_ptr2->info = "this world";		my_auto_ptr2 = my_auto_ptr;				// copy. but loss manager right.		my_auto_ptr2->PrintInfo();		//my_auto_ptr->PrintInfo();				// error code. (core dump)	}	// [expirment] auto_ptr: reset(), release();	std::auto_ptr<Base> my_auto_ptr3(new Base(33));	if (my_auto_ptr3.get()) {		//my_auto_ptr3.release();					// error code. load to memory dump.		/*		Base * tmp_ptr = my_auto_ptr3.release();	// right code.		delete tmp_ptr;		*/		my_auto_ptr3.reset();				// reset. enable to free memory	}	// std::pointer_ptr	return 0;}
 ```
 **std::auto_ptr几点说明：**
@@ -278,7 +278,7 @@ int main(int argc, char * agrv[]) {	/* std::auto_ptr */	std::auto_ptr<Base> my
 
 上面的```std::auto_ptr```在复制构造或者```operator=```时，原先的对象就报废了，因为所有权转移到新对象去了，是程序崩溃的隐患。为了避免此现象发生，```std::unique_ptr```很好的解决了这个问题，其**不提供智能指针的```operator=```功能，必须通过间接或显示的交出所有权（```std::move```, since c++11）**。
 
-```
+```c++
 std::unique_ptr<Base> fetch_unique_ptr() {	std::unique_ptr<Base> ptr(new Base(55));	//ptr->info = "construct unique_ptr.";	return ptr;};
 
 int main(int argc, char * agrv[]) {
@@ -374,7 +374,7 @@ auto my_onheap_lambda_func = new auto([=](int x) { /* ... */ });
 
 下面例子把匿名函数存储在变量、数组或vector中，并把它们当作命名参数来传递：
 
-```
+```c++
 #include <functional>
 #include <vector>
 #include <iostream>

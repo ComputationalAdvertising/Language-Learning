@@ -17,6 +17,10 @@
     + [TensorFlow系列]()
         + [功能梳理]() 
         + [代码解读]()
+    + [开源社区贡献]()
+        + https://github.com/dmlc/xgboost/pull/2008
+        + https://github.com/dmlc/xgboost/issues/1175
+        + https://ci.appveyor.com/project/tqchen/xgboost/build/1.0.364  
     
 + 《分布式机器学习》SpaceX系列总结
     + [第01章：DiML-先睹为快]()   
@@ -28,10 +32,11 @@
     + [第07章：DiML-推荐广告应用]()
 
 + 《深入浅出机器学习》系列笔记
-+ 《深度强化学习》系列笔记
++ 《深度学习与强化学习》系列笔记
     + [深度学习模型与算法]()
     + [深度强化学习]()
     + [生成对抗网络 GAN]()
+
 
 + 面试资料总结
     + 语言基础：C++/Java/Python/...
