@@ -8,64 +8,42 @@ tags:
 	- 交替方向乘子法
 	- 梯度提升法
 	- 受限约束优化
+
 ---
 
 + author: zhouyongsdzh@foxmail.com
 + date: 2016-03-29
 + weibo: [@周永_52ML](http://weibo.com/p/1005051707438033/home?)
 
-[站内跳转](#1)
-
-**ADMM相关问题：**
-
-1. ADMM算法的定位是什么？
-2. ADMM算法为什么适合作为解决分布式机器学习任务的算法框架？ 
-3. ADMM前世今生？（对偶提升，对偶分解，增强拉格朗日法）
-4. ADMM算法框架的结构表达？
-5. ADMM算法在分布式环境下的理论体系？（收敛性，一致性）
-6. ADMM算法在分布式环境下工作过程？（以yarn为例）
-7. 哪些学习模型可以适用于ADMM算法？
-8. AFMM算法使用场景？
-
----
-
 **内容列表**
 
-+ 写在前面
-+ 大规模机器学习的本质
-+ 约束优化问题
-	+ 对偶提升
-	+ 对偶分解
-	+ 增强拉格朗日乘子法
-+ 交替方向乘子法
-	+ 算法框架
-	+ 收敛性证明
-+ 一致性优化与均分优化
-	+ 全局变量一致性优化（consensus）
-	+ 均分优化（sharing）
-+ ADMM在优化领域的具体应用
-	+ 等式约束的凸优化问题
-	+ $\ell_1 \text{norm}$问题 
-+ ADMM与统计学习
-	+ 支持的统计学习模型
-	+ 预估模型
-+ ADMM与机器通信
-	+ ADMM与同步通信机制（以rabit为例）
-	+ ADMM与异步通信机制（以ps为例）
-+ ADMM应用场景
-	+ 分布式机器学习任务（大数据学习）
-	+ 多任务学习问题 
-+ 参考资料
++ [0. 写在前面](#0.写在前面)
++ [1. 大规模机器学习的本质](#1.大规模机器学习的本质)
++ [2. 约束优化问题](#2.约束优化问题)
+	+ [2.1. 对偶提升](#2.1.对偶提升)
+	+ [2.2. 对偶分解](#2.2.对偶分解)
+	+ [2.3. 增强拉格朗日乘子法](#2.3.增强拉格朗日乘子法)
++ [3. 交替方向乘子法](#3.交替方向乘子法)
+	+ [3.1. 算法框架](#3.1.算法框架)
+	+ [3.2. 算法性质与评价](#3.2.算法性质与评价)
++ [4. 一致性优化与均分优化](#4.一致性优化与均分优化)
+	+ [4.1. 全局变量一致性优化（consensus）](#4.1.全局变量一致性优化（consensus）)
+	+ [4.2. 均分优化（sharing）](#4.2.均分优化（sharing）)
++ [5. ADMM在优化领域的具体应用](#5.ADMM在优化领域的具体应用)
+   + [5.1. $\ell_1－\text{norm}$问题](#5.1.$\ell_1\text{norm}$问题)
+   + [5.2. 等式约束的凸优化问题](#5.2.等式约束的凸优化问题)
++ [6. ADMM与统计机器学习](#6.ADMM与统计机器学习)
++ [7. ADMM与机器通信](#7.ADMM与机器通信)
++ [8. ADMM应用场景](#8.ADMM应用场景)
++ [参考资料](#参考资料) 
 
-### 写在前面
+<h3 id="0.写在前面">0. 写在前面</h3>
 
-前面的第2、3、4章内容主要论述了一个机器学习计算引擎需要依赖的底层系统，那么如何运用一个分布式算法框架让底层系统有机的运转，以实现大规模学习任务呢？
-
-本章要论述了分布式优化算法框架－ADMM算法－来实现这一功能。ADMM算法并不是一个很新的算法，他只是整合许多不少经典优化思路，然后结合现代统计学习所遇到的问题，提出了一个比较一般的比较好实施的**分布式计算框架**。
+分布式优化算法是分布式机器学习算法方向的核心，本章主要想介绍一个算法框架－ADMM算法－来实现这一功能。ADMM算法并不是一个很新的算法，他只是整合许多不少经典优化思路，然后结合现代统计学习所遇到的问题，提出了一个比较一般的比较好实施的**分布式算法框架**。
 
 ADMM算法结构天然地适用于分布式环境下具体任务的求解。在详细介绍ADMM分布式算法之前，我们先了解狭下一个大学习问题的如何在分布式环境下拆分成多个子任务学习问题的。然后通过《约束优化问题一般的解决方案》来阐述ADMM算法的演化过程，过渡到ADMM。最后详细阐述ADMM算法结构、理论可行性证明、分布式环境下如何保证一致性以及信息共享，适用的学习问题。
 
-### 大规模机器学习的本质
+<h3 id="1.大规模机器学习的本质">1. 大规模机器学习的本质</h3>
 
 大规模机器学习问题（large-scale machine learning）必须要解决“三大”问题：1. 大数据学习能力；2. 大模型学习能力；3. 产生更大的效果。
 
@@ -100,7 +78,7 @@ $$
 
 在介绍ADMM算法之前，我们先来看下它的前身（precursors）是谁？是如何演化过来的？
 
-### ADMM演化历程
+<h3 id="2.约束优化问题">2. 约束优化问题</h3>
 
 说到ADMM算法的演化历程，要从等式约束优化问题说起。一个典型的等式约束优化问题，形式化表示如下：
 
@@ -113,8 +91,7 @@ $$
 
 其中，**目标函数**\\(f(x): R^n \rightarrow R\\)，\\(Ax=b\\)为**约束条件**，参数\\(x \in R^n, A \in R^{m \times n}, b \in R^m\\)。\\(s.t\\)是英文```subject to```的缩写。如何求解等式约束优化问题？
 
-<br>
-#### 对偶提升法
+<h4 id="2.1.对偶提升">2.1. 对偶提升</h4>
 
 等式约束优化问题一般是要用到拉格朗日乘子法。通过引入拉格朗日乘子，构造拉格朗日函数，分别对原参数和乘子求偏导（偏导数等于0），通过**交替优化**，使其最终收敛到最优解。其中，拉格朗日乘子又称算子、对偶变量。
 
@@ -169,7 +146,7 @@ $$
 
 > (1). 强凸函数
 > 
-> 在[《深入浅出机器学习》系列 第10章：深入浅出ML之cluster家族]() 中的EM算法有提到.
+> 在[《深入浅出机器学习》系列 第10章：深入浅出ML之cluster家族](http://www.52caml.com/head_first_ml/ml-chapter10-clustering-family/) 中的EM算法有提到.
 > 强凸函数需满足：\\(E[f(x)] > f(E(x)) \\)
 > 
 > 函数\\(f: I \rightarrow R\\)成为强凸的，若\\(\exists\alpha > 0\\)，使\\(\forall(x, y) \in I \times I, \forall t \in [0, 1]\\)，恒有：
@@ -205,9 +182,7 @@ $
 
 对偶提升法虽然对目标函数有严格的约束，使得很多优化目标不能用其求解。但是它具体一个很好的性质，详细的见下面要提到的对偶分解。
 
-
-<br>
-#### 对偶分解
+<h4 id="2.2对偶分解">2.2. 对偶分解</h4>
 
 对偶提升法虽然对目标函数有严格的要求，但是它还有一个非常好的性质：
 
@@ -246,8 +221,7 @@ $$
 
 如何在目标函数不满足强凸函数约束时，求解对应的优化问题呢？下面要提到的增广拉格朗日乘子法可以解决。
 
-<br>
-#### 增广拉格朗日乘子法
+<h4 id="2.3.增强拉格朗日乘子法">2.3. 增强拉格朗日乘子法</h4>
 
 前面提到，对偶提升方法求解优化问题时，目标函数必须满足强凸函数的条件，限制过于严格。为了增加对偶提升法的鲁棒性和放松对目标函数\\(f\\)强凸的约束条件，人们提出了[增广拉格朗日乘子法](https://en.wikipedia.org/wiki/Augmented_Lagrangian_method)（Augmented Lagrangians）用于解决这类问题。
 
@@ -276,15 +250,12 @@ $$
 \mathcal{L}_{\rho}(x, \beta) = f(x) + \frac{\rho}{2} {\Vert Ax-b \Vert}_2^2 + \beta^T (Ax-b)    \qquad\quad(diml.2.5.9)
 $$
 
-
 > 公式解读：
 > 
 >
 $$
 \mathcal{L}_{\rho}(x, \beta) = \overbrace{f(x)}^{原优化目标} + \overbrace{\underbrace{\frac{\rho}{2} {\Vert Ax-b \Vert}_2^2}_{二次惩罚项} + \underbrace{\beta^T(Ax-b)}_{拉格朗日乘子项} }^{增广拉格朗日乘子项}  \qquad (n.diml.2.5.3)
 $$
-
-
 
 **问题3：为什么添加二次惩罚项就可以“解除对目标函数\\(f(x)\\)强凸性质”的限制, 进而可得最优解了呢？**
 
@@ -332,11 +303,11 @@ $$
 
 果然在2010年由Stephen Boyd大师等人系统性的整理了交替方向乘子法（ADMM算法），可以解决上述的问题。为此它们长篇论述了ADMM算法的演化过程，参考论文：[Distributed Optimization and Statistical Learning via the Alternating Direction Method of Multipliers](http://web.stanford.edu/~boyd/papers/pdf/admm_distr_stats.pdf) 该文被《Foundations and Trends in Machine Learning》录入。
 
-### 交替方向乘子法
+<h3 id="3.交替方向乘子法">3. 交替方向乘子法</h3>
 
 交替方向乘子法（Alternating Direction Method of Multipliers，简称ADMM）**适用于大规模统计学习在分布式环境下的优化求解问题**。可以理解为增广拉格朗日乘子法的变种，旨在整合对偶提升法的可分解性和增广拉格朗日乘子法优秀的收敛性质，进一步提出的新算法。
 
-#### ADMM算法框架
+<h4 id="3.1.算法框架">3.1. 算法框架</h4>
 
 我们修改下公式\\((diml.2.5.1)\\)，这样更符合统计学习目标函数的形式. 重新定义的优化问题和Lagrange函数：
 
@@ -351,7 +322,6 @@ s.t. \; Ax = b
 s.t. & Ax + Bz = C
 \end{array}  \qquad\quad \quad (diml.2.5.13) 
 $$
-
 
 其中\\(x \in R^n, z \in R^m; A \in R^{p \times n}, B \in R^{p \times m}, C \in R^p\\)。
 
@@ -386,8 +356,7 @@ ADMM算法拆分参数\\(x\\)和\\(z\\)两步迭代最大的好处是：**当\\(
 
 在[```chapter6_DiML_算法框架_学习器```]()中可以看到，ADMM这种参数和目标函数的拆分非常适合机器学习中的\\(\ell_1 \text{-norm}\\)优化问题，即：```loss function + regularization```目标函数的分布式求解。
 
-
-#### ADMM算法性质与评价
+<h4 id="3.2.算法性质与评价">3.2. 算法性质与评价</h4>
 
 **1). 收敛性**
 
@@ -429,7 +398,7 @@ $$
 
 此外，在对偶变量更新的惩罚参数\\(\rho\\)原来是不变的。有一些文章做了可变的惩罚参数，目的是为了降低惩罚参数对初始值的依赖。而证明变动的$\rho$给ADMM的收敛性证明比较困难，因此实际中开设经过一系列迭代后$\rho$也稳定，直接用固定的惩罚参数$\rho$了。
 
-### 一致性优化和均分优化
+<h3 id="4.一致性优化与均分优化">4. 一致性优化与均分优化</h3>
 
 分布式优化有两个很重要的问题，即一致性优化问题和共享优化问题，这也是ADMM算法通往并行和分布式计算的途径。下面以机器学习问题的参数优化为例解释这两个重要的概念。
 
@@ -485,9 +454,9 @@ z^{k+1} & := \arg \min_{z} \left(L(N\overline{z} - b) + T \frac{\rho}{2} {\Vert 
 \end{align} 
 $$
 
-### ADMM在优化领域的具体应用
+<h3 id="5.ADMM在优化领域的具体应用">5. ADMM在优化领域的具体应用</h3>
 
-#### $\ell_{1}\text{-norm}$问题
+<h4 id="5.1.$\ell_1\text{norm}$问题">5.1. l1-norm问题</h4>  
 
  这里的$\ell_{1}\text{-norm}$问题不仅仅是指称为[Lasso](https://en.wikipedia.org/wiki/Lasso_(statistics))问题，而是包含了多种$\ell_{1}\text{-norm}$类型问题。 它的初衷是通过特征选择（自变量选择）来提高模型的预测精度和解释性，具体做法是在优化目标上添加$\ell_{1}$正则项。
 
@@ -564,7 +533,7 @@ $$
 \left(\color{red} { \frac{\beta_t}{\rho} + w_t } \right)  - sign({\vert \theta \vert}_1) \cdot \frac{\lambda}{\rho} \right) }
 $$
 
-说明：全局参数更新时，$\ell_{1}\text{-norm}$项需要求导。虽然在0处不可导，但仍有解析解，这里使用**[软阈值]()**的方法得到解析解：
+说明：全局参数更新时，$\ell_{1}\text{-norm}$项需要求导。虽然在0处不可导，但仍有解析解，这里使用**[软阈值](http://blog.csdn.net/jbb0523/article/details/52103257)**的方法得到解析解：
 
 $$
 \color{blue}{\theta} =
@@ -581,33 +550,25 @@ $$
 
 
 > [软阈值（Soft-Thresholding）]()又称压缩算子（shrinkage operator）
-> 
 
+<h4 id="5.2.等式约束的凸优化问题">5.2. 等式约束的凸优化问题</h4>
 
-#### 受约束的凸优化问题
-
-
-
-<br>
-### ADMM for CTR Model
---
+<h3 id="6.ADMM与统计机器学习">6. ADMM与统计机器学习</h3>
 
 generalized lasso, group lasso, 高斯图模型，Tensor型图模型等问题的求解，都可以在ADMM算法框架上直接应用和实施，这正是ADMM算法的一个优势所在，便于大规模分布式部署。
 
 | 算法框架 | 模型 | 参数学习方法 |
 | --- | :--- | --- | 
-| admm | Lasso <br> Logistic Regression <br> Factorization Machine <br> Filed-awared Factorization Machine | sgd <br> adaptive sgd <br> ftrl <br> lbfgs <br> mcmc |
+| admm | Lasso (Group Lasso) <br> Logistic Regression <br> Factorization Machine <br> Filed-awared Factorization Machine | sgd <br> adaptive sgd <br> ftrl <br> lbfgs <br> mcmc <br> ... |
 
 ### ADMM应用场景
 
 + Big-Data Learning 
 + Multi-Task Learning 
 
-### ADMM算法应用
+<h3 id="参考资料">参考资料</h3>
 
-### 参考资料
-
++ 论文：Boyd S, Parikh N, Chu E, et al. Distributed optimization and statistical learning via the alternating direction method of multipliers[J]. Foundations and Trends® in Machine Learning, 2011, 3(1): 1-122.
++ [斯坦福大学－ADMM网址](http://web.stanford.edu/~boyd/admm.html)
 + [分布式计算、统计学习与ADMM算法](http://joegaotao.github.io/cn/2014/02/admm/)
-
-<h2 id = "1">持续更新中</h2>
 

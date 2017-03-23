@@ -12,31 +12,38 @@ issue:
 ### 目录
 --
 
-#### [1. 基础知识](#1.基础知识)
+#### 1. [基础知识](#1.基础知识)
 
-+ [1.1. C++关键字](#1.1.C++关键字)
++ 1.1. [C++关键字](#1.1.C++关键字)
 
     |[[namespace](#1.1.1.namespace)]|[[typedef](#1.1.2.typedef)]|[[template](#1.1.3.template)]| [[explicit](#1.1.4.explicit)]
     | --- | --- | --- | --- |
     
-+ [1.2. IO系统](#1.2.IO系统) 
++ 1.2. [IO系统](#1.2.IO系统) 
 
-#### [2. 数据结构与算法](#2.数据结构与算法)
+#### 2. [数据结构与算法](#2.数据结构与算法)
 
 | [[string](#2.1.string)]| [[vector](#2.2.vector)]| [[iterator](#2.3.iterator)] | [[map](#2.4.map)] | [[struct](#2.5.struct)] | [[math](#2.6.math)] | [[sort](#2.7.sort)] | [[random](#2.8.random)]
 | --- | --- | --- | --- | --- | --- | --- | --- |
 
-#### [3. C++特性](#3.C++特性)
+#### 3. [C++特性](#3.C++特性)
 
 | [[class]()] | [[virtual]()] | [[smart_ptr](#3.3.smart_ptr)] |
 | --- | --- | --- |
 
 #### 4. C++11新特性
 
-| [[std::functional]()] | [[std::bind]()] | [[lambda]()]
+| [[std::function](#4.1.function)] | [[std::bind]()] | [[lambda]()]
 | --- | --- | --- |
 
-#### 5. 那些坑儿
+#### 5. [C++项目常用工具](#5.C++项目常用工具)
+
+| [[protobuf](#5.1.protobuf)] | [[glog](#5.2.glog)] | [[gtest](#5.3.gtest)] |
+| --- | --- | --- |
+
+#### 6. 踩过的坑儿
+
+
 
 + **```undefined reference to `...` ```**
 
@@ -178,6 +185,11 @@ explicit关键字只对有一个参数的类构造函数有效, 如果类构造�
 
 <h3 id="2.2.vector">2.2. vector</h3>
 
+```c++
+std::vector<int> vec(10);
+int * p = vec.data();
+```
+
 ### struct结构体
 
 ### random随机数
@@ -305,7 +317,26 @@ int main(int argc, char * agrv[]) {
 ## C++11新特性
 
 --
-### std::functional
+
+<h4 id="4.1.function">4.1 std::function</h4>
+
+类模版`std::function`作为一个通用、多态的函数封装。先看它是如何应用的？
+
+```c++
+#include <functional>#include <iostream>using namespace std; std::function<float(float label, float pred)> Loss;float CalcLossValue(float label, float pred) {  return label - pred;}auto lambda = [](float label, float pred) -> float { return label-pred; };class Functor {  public:    float operator()(float label, float pred) {      return label - pred;    }};class TestClass {  public:    float ClassMember(float label, float pred) {      return label - pred;    }    static float StaticMember(float label, float pred) {      return label - pred;    }};int main() {  Loss = CalcLossValue;  std::cout << "CalcLossValue  Loss(2.0, 0.9): " << Loss(2.0, 0.9) << std::endl;  Loss = lambda;  std::cout << "lambda Loss(2.0, 0.9): " << Loss(2.0, 0.9) << std::endl;  Functor testFunctor;  Loss = testFunctor;  std::cout << "Functor Loss(2.0, 0.9): " << Loss(2.0, 0.9) << std::endl;  TestClass testObj;  Loss = std::bind(&TestClass::ClassMember, testObj, std::placeholders::_1, std::placeholders::_2);  std::cout << "ClassMember Loss(2.0, 0.9): " << Loss(2.0, 0.9) << std::endl;  Loss = TestClass::StaticMember;  std::cout << "StaticMember Loss(2.0, 0.9): " << Loss(2.0, 0.9) << std::endl;  return 0;}
+```
+
+如何理解`std::function`？
+
+std::function对C++中各种可调用实体（普通函数、Lambda表达式、函数指针、以及其它函数对象等）的封装，形成一个新的可调用的std::function对象。
+
+对于各个可调用实体转换成std::function类型的对象，上面的代码都有，运行一下代码，阅读一下上面那段简单的代码。总结了简单的用法以后，来看看一些需要注意的事项：
+
++ 关于可调用实体转换为std::function对象需要遵守以下两条原则：
+    + 转换后的std::function对象的参数能转换为可调用实体的参数；
+    + 可调用实体的返回值能转换为std::function对象的返回值。
++ std::function对象最大的用处就是在实现函数回调，使用者需要注意，它不能被用来检查相等或者不相等，但是可以与NULL或者nullptr进行比较。
+
 
 --
 ### std::bind
@@ -409,7 +440,46 @@ int main(int argc, char* argv[])
 }
 ```
 
-## 那些坑儿
+<h2 id="5.C++项目常用工具">5. C++项目常用工具</h2> 
+
+<h3 id="5.1.protobuf">5.1. protobuf</h3>
+
++ 下载与安装：
+
+```bash
+git clone https://github.com/google/protobuf.git
+cd protobuf 
+./autogen.sh        // 自动安装依赖(gmock等）和生成configure
+./configure --prefix=${INSTALLED_DIR}/protobuf/${version}  // 指定安装目录
+make                // 漫长的make过程
+make check          // check过程也比较慢
+make install        // 在安装目录下生成bin, include, lib目录
+```
+
+> 由于protobuf是用automake编译的，需要提前安装automake/libtool等工具，使用如下命令：
+> 
+> `sudo apt-get install autoconf automake libtool curl make g++ unzip`
+> 
+> 具体可参考：https://github.com/google/protobuf/blob/master/src/README.md
+
++ protobuf demo
+
+
+需要注意的地方：
+
+> + **protoc 2.0与3.0版本，函数接口变化比较大，使用pb时需要注意版本问题**。比如：
+> 
+> ```
+> ByteSize();       // for protoc 2.* version
+> ByteSizeLong();   // for protoc 3.* version
+> ```
+> 
+> + **protobuf的message在执行clear操作时，是不会对其用到的空间进行回收的，只会对数据进行清理**。
+> 
+> protobuf message的clear()操作是存在cache机制的，它并不会释放申请的空间，这导致占用的空间越来越大。如果程序中protobuf message占用的空间变化很大，那么最好每次或定期进行清理。这样可以避免内存不断的上涨。
+
+
+## 踩过的坑儿
 
 --
 ### 1. [```undefined reference to `...` ```](http://blog.csdn.net/jfkidear/article/details/8276203)
@@ -434,11 +504,18 @@ int main(int argc, char* argv[])
 
 使用OpenMP时，需要在CMake文件中 添加 **编译环境代码**，即：```set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")```.
 
+异常示例4：```undefined reference to `spacex::FFM<unsigned long, float>::Predict(dmlc::Row<unsigned long> const&, std::vector<unsigned long, std::allocator<unsigned long> > const&, std::vector<float, std::allocator<float> > const&, std::vector<int, std::allocator<int> > const&)'```
+
+主要原因是这里把模版类分离编译导致。就是把模版类的声明和实现分别放在了头文件和源文件中。而g++本身不支持模版类的分离编译，所有提示找不到方法的具体实现（在*.cc中）。
+
+解决方案：要么不使用模版类，要么把声明和定义放在同一个*.h文件中。参考：http://blog.sina.com.cn/s/blog_6cef0cb50100nb7o.html
+
 因此，出现```undefined reference to `...` ```问题时，通常有如下原因：
 
 1. 检查include头文件是否存在，如果没有需要添加```include_directories()```
 2. 检查相应的链接库是否存在，如果没有需要```target_link_libraries(${exec_name} dmlc)```;
 3. 检查对应的编译环境是否确实，比如pthread, OpenMP都需要在g++编译时，添加对应的编译环境。
+4. 查看对应的类是否是模版类。如果是模版类，不应该有对应的*.cc文件，因为g++不支持模版类的分离编译；
 
 --
 ### 2. [... error while loading shared libraries: *.so : cannot open shared object file: No such file or directory](http://blog.csdn.net/sahusoft/article/details/7388617)
@@ -447,7 +524,7 @@ int main(int argc, char* argv[])
 
 解决方案：
 
-1. 首先，用```locate *.so```命令检查共享库是否存在，存过不存在，需要网上下载和安装。如果存在，进入第二步
+1. 首先，用```locate *.so```命令检查共享库是否存在，如果不存在，需要网上下载和安装。如果存在，进入第二步
 2. 将```*.so```所对应的目录加入```LD_LIBRARY_PATH```路径中，举例操作：
 
 ```
@@ -458,6 +535,8 @@ export LD_LIBRARY_PATH
 需要配置：```export LD_LIBRARY_PATH=/usr/local/mysql/lib:$LD_LIBRARY_PATH```.
 
 上面的配置在MakeFile中可以直接找到对应的环境变量。在CMakeLists中如何使用呢？ cmake使用环境变量需要使用```ENV```关键词。即: ```$ENV{LD_LIBRARY_PATH}```
+
+在使用automake编译时，也出现类似的错误：`./openmit: error while loading shared libraries: libprotobuf.so.12: cannot open shared object file: No such file or directory`. automake下的解决方案是？
 
 
 
