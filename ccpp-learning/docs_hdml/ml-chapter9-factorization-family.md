@@ -225,6 +225,34 @@ $$
 
 **梯度法训练FM**
 
+http://blog.csdn.net/itplus/article/details/40536025
+
+如何求FM参数（包括隐向量）的梯度？ 在给出具体推导之前，先了解FM模型表达式中一个重要性质－多元共线性（multicollinearity），它的定义如下：用参数$\Theta=(w_0, w1, ..., w_n, v_{11}, ..., v_{1k}, ..., v_{nk})^T$表示FM模型所有参数，那么对于任意的参数$\theta \in \Theta$，存在两个与$\theta$取值无关的函数$g_{\theta}(x)$和$h_{\theta}(x)$，使得下述公式成立：
+
+$$
+\hat{y}(x) = g_{\theta}(x) + \theta \cdot h_{\theta}(x)
+$$
+
+具体到FM模型，分析如下：
+
+1. 当$\theta = w_0$时
+
+    $$
+    \hat{y}(\mathbf{x}) := w_0 \cdot \color{red} {1} + \sum_{i=1}^{n} w_i x_i + \sum_{i=1}^{n} \sum_{j=i+1}^{n} \langle \mathbf{v}_i, \mathbf{v}_j \rangle x_i x_j \qquad \text{1}
+    $$
+
+2. 当$\theta = w_j$时
+
+    $$
+    \hat{y}(\mathbf{x}) := w_j \cdot \color{red}{x_j} + w_0 + \sum_{i=1, i \neq j}^{n} w_i x_i + \sum_{i=1}^{n} \sum_{j=i+1}^{n} \langle \mathbf{v}_i, \mathbf{v}_j \rangle x_i x_j \qquad \text{2}
+    $$
+
+3. 当$\theta = v_{lk}$时
+
+    $$
+    \hat{y}(\mathbf{x}) := v_{lk} \cdot \color{red}{\left(x_l \cdot \sum_{i=1,i \neq l}^{n} v_{ik} x_i \right)} + w_0 + \sum_{i=1}^{n} w_i x_i + \sum_{i=1}^{n} \sum_{j=i+1}^{n} \left( \sum_{f=1, if \neq lk, jf \neq lk} v_{if} v_{jf} \right) x_i x_j
+    $$
+
 给出伪代码
 
 **FM训练复杂度**

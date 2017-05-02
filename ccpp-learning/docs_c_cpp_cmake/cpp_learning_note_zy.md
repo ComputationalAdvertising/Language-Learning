@@ -28,7 +28,7 @@ issue:
 
 #### 3. [C++特性](#3.C++特性)
 
-| [[class]()] | [[virtual]()] | [[smart_ptr](#3.3.smart_ptr)] |
+| [[class](#3.1.class)] | [[virtual]()] | [[smart_ptr](#3.3.smart_ptr)] |
 | --- | --- | --- |
 
 #### 4. C++11新特性
@@ -42,8 +42,6 @@ issue:
 | --- | --- | --- |
 
 #### 6. 踩过的坑儿
-
-
 
 + **```undefined reference to `...` ```**
 
@@ -206,12 +204,23 @@ std::cout << uni_dist(rd) << std::endl;
 
 <h2 id="3.C++特性">3. C++特性</h2>
 
+<h4 id="3.1.class">3.1 class </h4>
 
-参考[智能指针](http://blog.csdn.net/xt_xiaotian/article/details/5714477)
++ C++创建对象，new与不new的区别
+    
+(1). 不new创建对象：对象存储在栈内存中，作用域结束后就会被释放。`Base base = Base();`
+
+优点：不用担心内存泄漏，系统会自动完成内存的释放。缺点：函数中不能返回该对象的指针，因为函数结束后，该对象的内存就被释放了。
+
+(2). 用new创建对象：是存储在堆内存中，作用域结束后不会被释放。除非进程结束或显示调用delete释放。`Base * base = new Base();`
+
+优点：函数中可以放回对象的指针，因为对象在函数结束后不会被释放。缺点：如果管理不当，不delete的话，容易造成内存泄漏。
+
+因此使用[3.3. smart_ptr](#3.3.smart_ptr)去初始化一个对象。
 
 <h4 id="3.3.smart_ptr">3.3. smart_ptr</h4> 
 
-
+参考[智能指针](http://blog.csdn.net/xt_xiaotian/article/details/5714477)
 
 为什么要存在智能指针？为什么要使用智能指针？博客[智能指针的作用与原理](http://blog.csdn.net/chen825919148/article/details/8155411)已经讲解的很清楚。
 
@@ -303,6 +312,13 @@ int main(int argc, char * agrv[]) {
 1. **无法进行复制构造和赋值操作**：意味着无法得到指向同一个对象的两个unique_ptr. 但提供了移动构造赋值和显示赋值功能。
 2. **为动态申请的内存提供异常安全**: 可以将动态申请内存的所有权传递给某个函数；从某个函数返回动态申请内存的所有权；
 3. **可以作为容器元素**。
+
+#### `std:shared_ptr<>`
+
+下面代码可以说清楚`unique_ptr`与`shared_ptr`的区别
+
+```c++
+int main(int argc, char * argv[]) {  //std::unique_ptr<A> a(A::Create("b", 10));  //std::shared_ptr<A> a(new B("b", 10));  std::unique_ptr<A> a(new B("b", 10));  //A * a = A::Create("b", 10);  //std::unique_ptr<A> a = fetch_unique_ptr("b", 10);  a->Info();  //A * a1 = A::Create("c", 20);  //a1->Info();  return 0;}```
 
 ```std::auto_ptr```和```std::unique_ptr```都是某一块内存独享所有权的智能指针。实际应用中会出现**某一块内存允许多个智能指针共享**，该当如何？下面的```std::shared_ptr```可以满足该场景。
 
@@ -538,5 +554,102 @@ export LD_LIBRARY_PATH
 
 在使用automake编译时，也出现类似的错误：`./openmit: error while loading shared libraries: libprotobuf.so.12: cannot open shared object file: No such file or directory`. automake下的解决方案是？
 
+--
+### 3. [...invalid initialization of non-const reference of type...](http://blog.csdn.net/kongying168/article/details/3864756)
+
+```c++
+/home/zhouyongsdzh/workspace/openmit/openmit/include/openmit/data.h:24:41: error: invalid initialization of non-const reference of type ‘std::__cxx11::string& {aka std::__cxx11::basic_string<char>&}’ from an rvalue of type ‘std::__cxx11::string {aka std::__cxx11::basic_string<char>}’             std::string & data_format = "auto") {                                         ^
+```
+
+错误提示的含义：c++中临时变量不能作为非const的引用参数
 
 
+--
+### 4. [...multiple definition of ...](http://blog.csdn.net/xxxxxx91116/article/details/7446455)
+
+```c++
+CMakeFiles/openmit.dir/worker.cc.o: In function `mit::WorkerParam::__MANAGER__()':worker.cc:(.text+0x176): multiple definition of `mit::WorkerParam::__MANAGER__()'   // worker.cc提示多次定义errorCMakeFiles/openmit.dir/cli_main.cc.o:cli_main.cc:(.text+0x3b6): first defined here    // 最早在cli_main.cc中被定义collect2: error: ld returned 1 exit status
+```
+
+上面出现错误的原因：把变量的定义（`DMLC_REGISTER_PARAMETER(WorkerParam);`）放在了worker.h文件中，而worker.cc和cli_main.cc都include了worker.h，进行了两次变量的定义，所以提示错误。
+
+解决方案：worker.h中的变量定义放在worker.cc中。如此可避免变量重复定义的问题。
+
+>
+1.编译是针对一个一个文件来说的，而链接则是针对一个工程所有的.o文件而言的。
+2.#ifndef只是对防止一个文件的重复编译有效
+3.全局变量最好在.cpp文件中定义，在.h文件中加上extern申明，因为在.h文件中定义，容易在链接时造成变量重定义
+
+--
+### 5. [ ...error: cannot allocate an object of abstract type ...](http://blog.csdn.net/u012474678/article/details/38866415)
+
+在基类中申明的虚函数，在派生类中必须继承并实现。在new一个派生类时才不会报该错误。
+
+此外，`Unit * base = new SimpleUnit();`而不能是`Unit base = new SimpleUnit();`. 
+
+在C++中，new一个类时，需要用指针接着。参考：[C++创建对象，new与不new的区别](http://blog.csdn.net/autoliuweijie/article/details/50579275)
+
+--
+### 6. [... Error in `./xx': free(): invalid pointer: 0x00000000006042e0 ...]()
+
+```c++
+*** Error in `./xx': free(): invalid pointer: 0x00000000006042e0 ***======= Backtrace: =========/lib/x86_64-linux-gnu/libc.so.6(+0x777e5)[0x7f3989dea7e5]/lib/x86_64-linux-gnu/libc.so.6(+0x7fe0a)[0x7f3989df2e0a]/lib/x86_64-linux-gnu/libc.so.6(cfree+0x4c)[0x7f3989df698c]./xx[0x4015dc]./xx[0x401d02]./xx[0x401bdb]./xx[0x401397]/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xf0)[0x7f3989d93830]./xx[0x401039]======= Memory map: ========00400000-00403000 r-xp 00000000 08:01 2490760                            /home/zhouyongsdzh/workspace/openmit/openmit/language/xx...7f398a351000-7f398a352000 rw-p 00015000 08:01 398344                     /lib/x86_64-linux-gnu/libgcc_s.so.1...7f398a6d0000-7f398a6d4000 rw-p 00000000 00:00 0 7f398a6d4000-7f398a6fa000 r-xp 00000000 08:01 397534                     /lib/x86_64-linux-gnu/ld-2.23.so...7f398a8fb000-7f398a8fc000 rw-p 00000000 00:00 0 7fffc3ff7000-7fffc4019000 rw-p 00000000 00:00 0                          [stack]7fffc41e1000-7fffc41e3000 r--p 00000000 00:00 0                          [vvar]7fffc41e3000-7fffc41e5000 r-xp 00000000 00:00 0                          [vdso]ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0                  [vsyscall]Aborted (core dumped)
+```
+
+背景：在工厂方法派生类返回实现, 对应的调用方式：`std::unique_ptr<A> a(A::Create("b", 10));` 报的错误：
+
+```c++
+static B * Get(std::string type, int a) {
+  //return new B(type, a);
+  static B b(type, a);      // stack space  return & b;}
+```
+
+如果改成：
+
+```c++
+static B * Get(std::string type, int a) {
+  return new B(type, a);    // heap space
+  //static B b(type, a);        //return & b;}
+```
+
+--
+### 7. [... error: passing ‘const std::unordered_map<int, mit::Unit*>’ as ‘this’ argument discards qualifiers [-fpermissive] ...]()
+
+具体错误：
+
+```c++
+/home/zhouyongsdzh/workspace/openmit/openmit/test/unittests/unittest_openmit_unit.cc: In function ‘void run(const std::unordered_map<int, mit::Unit*>&, int)’:/home/zhouyongsdzh/workspace/openmit/openmit/test/unittests/unittest_openmit_unit.cc:7:37: error: passing ‘const std::unordered_map<int, mit::Unit*>’ as ‘this’ argument discards qualifiers [-fpermissive]   mit::Unit * unit = map_weight_[key];                                     ^In file included from /usr/include/c++/5/unordered_map:48:0,                 from /home/zhouyongsdzh/workspace/openmit/openmit/include/openmit/unit.h:4,                 from /home/zhouyongsdzh/workspace/openmit/openmit/test/unittests/unittest_openmit_unit.cc:1:/usr/include/c++/5/bits/unordered_map.h:667:7: note:   in call to ‘std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>::mapped_type& std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>::operator[](const key_type&) [with _Key = int; _Tp = mit::Unit*; _Hash = std::hash<int>; _Pred = std::equal_to<int>; _Alloc = std::allocator<std::pair<const int, mit::Unit*> >; std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>::mapped_type = mit::Unit*; std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>::key_type = int]’       operator[](const key_type& __k)
+```
+
+问题背景：
+
+```c++
+void run(const std::unordered_map<int, mit::Unit * > & map_weight_, int key) {  mit::Unit * unit = map_weight_[key];  unit->SetLinearItem(0.0999);  std::cout << "unit.Linear: " << unit->LinearWeight() << std::endl;}
+```
+
+主要原因是：当`const map_weight_`对象调用`operator[]`时，编译器检测出问题。**对一个const对象调用non-const成员函数是不允许的，因为non-const成员函数不保证一定不修改对象。**
+
+编译器在这里做了一个假定，假定`operator[]`试图修改`map_weight_`对象，而与此同时，`map_weight_`是const的，**所有试图修改const对象的都会报error**。
+
+解决办法：去掉const，或者`operator[]`改成const方法（这里比较困难）.
+
+```c++
+void run(std::unordered_map<int, mit::Unit * > & map_weight_, int key) { ... }
+```
+
+--
+### 8. [double free / free: invalid pointer]
+
+`src/learner.cc`出现内存泄漏：
+
+```c++
+  /*  mit_float * pvals = map_grad[keys[0]]->Data();  auto offset = map_grad[keys[0]]->Size();  for (size_t i = 1; i < nfeature; ++i) {    std::cout << "Learner::Run i: " << i << std::endl;    memcpy(pvals + offset,         map_grad[keys[i]]->Data(),         map_grad[keys[i]]->Size() * sizeof(mit_float));    offset += map_grad[keys[i]]->Size();  }    std::cout << "nfeature done" << std::endl;  std::vector<mit_float> grad_vals(pvals, pvals + offset);  vals = &grad_vals; */
+```
+
+换成下面代码则正常
+
+```c++
+  // map_grad_ --> vals  vals->clear();  for (auto i = 0u; i < nfeature; i++) {    mit::Unit * unit = map_grad[keys[i]];    vals->insert(vals->end(),         unit->Data(), unit->Data() + unit->Size());    delete unit;
+```
+
+继续跟进问题：

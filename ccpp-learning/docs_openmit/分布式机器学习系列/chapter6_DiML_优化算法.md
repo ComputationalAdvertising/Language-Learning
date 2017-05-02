@@ -1,5 +1,8 @@
 ## 优化算法
 
+
+### [FM＋SGD](http://blog.csdn.net/itplus/article/details/40536025)
+
 ### ffm模型＋（sgd／ftrl）
 
 ### ffm实现相关
