@@ -100,11 +100,12 @@ worker端处理逻辑，针对每一个batch，有以下几步：
 损失函数决定了梯度更新逻辑，因此在梯度细粒度的推导中，可以用不到模型。或者梯度根据loss来生成（lambda方式）
 
 $$
-\min_w \quad \text{Loss(h(x; w), y)} + \lambda_1 \cdot {\vert w \vert}_1 + \lambda_2 \cdot {\Vert w \Vert}_2^2
+\quad \min_\vec{w} \; \sum_{(x, y) \in \mathcal{D}} \mathcal{L}(x,y; \vec{w}) \; + \; \lambda_1 \Omega_{1}(\vec{w}) + \; \lambda_2 \Omega_{2}(\vec{w}) \\\
+w_j \longleftarrow w_j - \color{purple}{\underbrace{\eta}_{学习率}}  \cdot  \left( \underbrace { \color{orange}{\frac{ \partial }{ \partial w_j} \mathcal{L}(x,y; \vec{w}) }}_{损失函数梯度} + \underbrace {\color{purple}{\lambda_1 \cdot \frac{\partial}{\partial w_j} \Omega_{1}(\vec{w})}}_{\mathcal{l}1正则项梯度} + \underbrace { \color{purple}{\lambda_2 \cdot \frac{\partial}{\partial w_j} \Omega_{2}(\vec{w})}}_{\mathcal{l}2正则项梯度} \right)
 $$
 
 $$
-w_j \longleftarrow w_j - \eta \cdot \overbrace { \left( \underbrace { (\text{label - pred}) * \underbrace {\frac{ \partial }{ \partial w_j}f(x)}_{模型表达式梯度} }_{损失函数梯度} + \underbrace {\lambda_1 \cdot \frac{\partial}{\partial w_j} {\Vert w \Vert}_1}_{\mathcal{l}1正则项梯度} + \underbrace { \lambda_2 \cdot \frac{\partial}{\partial w_j} {\Vert w \Vert}_2^2}_{\mathcal{l}2正则项梯度} \right)}^{目标函数梯度}
+w_j \longleftarrow w_j - \color{purple}{\underbrace{\eta}_{学习率}}  \cdot \overbrace { \left( \underbrace { (\text{label - pred}) * \underbrace {\frac{ \partial }{ \partial w_j}f(x)}_{模型表达式梯度} }_{损失函数梯度} + \underbrace {\lambda_1 \cdot \frac{\partial}{\partial w_j} {\Vert w \Vert}_1}_{\mathcal{l}1正则项梯度} + \underbrace { \lambda_2 \cdot \frac{\partial}{\partial w_j} {\Vert w \Vert}_2^2}_{\mathcal{l}2正则项梯度} \right)}^{目标函数梯度}
 $$
 
 worker端需要保存的数据有：部分模型权重和梯度值；
