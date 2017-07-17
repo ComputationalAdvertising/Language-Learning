@@ -4,9 +4,9 @@ date: 2015-01-05 18:30:31
 categories: 
 	- 分布式机器学习
 tags: 
-	- ADMM
-	- MPI
-	- Rabit
+	- MPI (rabit)
+	- PS (ps-lite)
+    - 系统容错(慢节点问题)，以及OpenMIT解决方案
 ---
 
 + author: zhouyongsdzh@foxmail.com
@@ -75,12 +75,41 @@ cd ${rabit_dir}/guide && make   // 生成basic.rabit
 <h3 id="4.异步通信-Parameter-Server">4. 异步通信-Parameter Server</h3>
 --
 
-随着数据量和参数的快速增长，单机搞不定，需要利用集群分布式方式搞定。
+互联网的机器学习应用领域，分布式环境下的算法优化已经成为了一种先决条件，因为单机解决不了日益增长的庞大数据。因此分布式机器学习已经成为了主要机器学习任务的主要工具。我们看分布式机器学习是什么？
+
+`分布式机器学习 ＝ 分布式系统 ＋ 机器学习算法`
+
+简单梳理一下应用于机器学习的分布式系统有哪些？它们有哪些特点与不足。
+
++ Hadoop/Spark: 每次迭代强制同步，采用Iterative MapReduce的架构。不足：很容易因为集群个别机器的低性能导致全局性能的降低（木桶效应）；
++ GraphLab：采用图形抽象的方式进行异步通信，缺少了以 MapReduce 为基础架构的弹性扩展性，并且它使用粗粒度的snapshots来进行恢复，这两点都会阻碍到可扩展性。
++ Parameter Server：异步迭代，吸取了GraphLab异步迭代的优势，并解决了其在扩展性方面的劣势。
 
 
-#### 1. PS系统架构
 
-图
+#### 1. PS特点
+
++ Ease of Use （易用）
+
+全局共享的参数可以被表示成各种vector，matrices以及相应的sparse类型，并且提供了高性能线性代数库用于vector和matrix的操作，这非常适合于机器学习算法的开发。
+
++ Efficient Communication （高效通信）
+
+PS采用异步通信，不需要在计算过程中停下来等一些机器执行完一个iteration（除非有必要），这大大减少了延时。宽松的一致性要求进一步减少了同步的成本和延时。PS允许算法设计者根据自身的情况来做算法收敛速度和系统性能之间的trade-off。
+
++ Elastic Scalability （弹性扩展性）
+
+PS使用了一个分布式hash表使得新的server节点可以随时动态的插入到集合中；因此，新增一个节点不需要重新运行系统（相比MPI）。
+
++ Fault Tolerance and Durability（容错和耐用性）
+
+节点故障在大规模集群中是不可避免的。从非灾难性机器故障中恢复，只需要1秒，而且不需要中断计算。Vector clocks 保证了经历故障之后还是能运行良好。
+
+问题：现在的ps-lite是否还存在弹性扩展性和容错功能。
+
+#### 2. PS系统架构
+
+
 
 PS架构主要包含两类节点：Clients和Servers。
 

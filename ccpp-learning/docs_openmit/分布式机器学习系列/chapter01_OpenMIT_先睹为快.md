@@ -97,9 +97,9 @@ Paremeter Server上的迭代计算，如果完全不设置barrier，也即是Asy
 
 | 分布式计算框架 | 模型节点 | 数据节点 | 模型节点个数 | 通信接口 | 通信方式 |
 | :--: | :--: | :--: | :--: | :--: | :--: |
-| Spark MLLib | Driver Program | Executor | 1 | treeAggregate | 同步迭代 |
-| Vowpal Wabbit | Mapper (id=0) | All Mapper | 1 | allReduce | 同步迭代 |
-| **Parameter Server** | Server | Worker | **多个** | Push/Pull | **异步**迭代 |
+| Spark MLLib | Driver Program | Executor | 1 | treeAggregate | 同步 |
+| Vowpal Wabbit／MPI | Mapper (id=0) | All Mapper | 1 | allReduce | 同步 |
+| **Parameter Server** | Server | Worker | **多个** | Push/Pull | **异步** |
 
 总的来说，解决好以上几个问题、构建一套大规模的机器学习系统并非不可实现，但是它需要严谨的工程能力和大量巧妙的trick。工程能力可以帮助更合理地抽象结构、定义同用接口，trick则帮助解决现实中的障碍，得到更稳定和高效的系统。
 
@@ -129,7 +129,7 @@ Paremeter Server上的迭代计算，如果完全不设置barrier，也即是Asy
 + 1. SpaceX机器学习
     1. Worker端&&Server端执行逻辑（为代码）［doing］
 
-Worker端伪代码：
+### Worker端工作过程：
 
 $
 \{ \\\
@@ -152,7 +152,7 @@ $
 \}
 $
 
-Server端伪代码：
+### Server端工作过程：
 
 $
 \{ \\\
@@ -200,22 +200,23 @@ $
 
 + 模型
 
-| 模型 | 表达式 |
-| :--: | --- |
-| Logistic Regression | $\hat{y}(\mathbf{x}) = w_0 +  \sum_{i=1}^{n} w_i x_i$ |
-| Factorization Machine | $\hat{y}(\mathbf{x}) := w_0 + \sum_{i=1}^{n} w_i x_i + \sum_{i=1}^{n} \sum_{j=i+1}^{n} \langle \mathbf{v}_i, \mathbf{v}_j \rangle x_i x_j$ |
-| Field-awared Factorization Machine | $\hat{y}(\mathbf{x}) := w_0 + \sum_{i=1}^{n} w_i x_i + \sum_{i=1}^{n} \sum_{j=i+1}^{n} \langle \mathbf{v}_{i,\,f_j}, \mathbf{v}_{j,\,f_i} \rangle x_i x_j$ |
+| 模型 | 表达式 | 特点 |
+| :--: | --- | --- |
+| Logistic Regression | $\hat{y}(\mathbf{x}) = w_0 +  \sum_{i=1}^{n} w_i x_i;\quad sigmoid$ | 线性表达
+| Factorization Machine | $\hat{y}(\mathbf{x}) := w_0 + \sum_{i=1}^{n} w_i x_i + \sum_{i=1}^{n} \sum_{j=i+1}^{n} \langle \mathbf{v}_i, \mathbf{v}_j \rangle x_i x_j$ | 1. FM降低了交叉项参数学习不充分的影响<br>2. FM提升了参数学习效率<br>3. FM提升了模型预估能力(历史未出现场景) 
+| Field-awared Factorization Machine | $\hat{y}(\mathbf{x}) := w_0 + \sum_{i=1}^{n} w_i x_i + \sum_{i=1}^{n} \sum_{j=i+1}^{n} \langle \mathbf{v}_{i,\,f_j}, \mathbf{v}_{j,\,f_i} \rangle x_i x_j$ | FM基础上，学习每个field的隐式表达（稀疏性增大，对训练数据要求更多） |
+| ... | ... | ... |
 
 后续可以支持Large-Scale Matrix Factorization等模型.
 
 + 优化算法
 
-| 优化算法 | 核心公式 |
-| :--: | --- |
-| Gradient Descent | $w_i \leftarrow w_i - \eta \cdot g_i$ |
-| Adaptive Gradient Descient | $w_i \leftarrow w_i - \frac{\eta}{\sqrt{n_i} + \epsilon} \cdot g_i; \quad n_i \leftarrow n_i + g_i \cdot g_i;$ |
-| AdaDelta | $w_i \leftarrow w_i - \frac{\eta}{\sqrt{n_i} + \epsilon} \cdot g_i; \quad n_i \leftarrow \rho \cdot n_i + (1 - \rho) \cdot g_i \cdot g_i; $ |
-| Follow The Regularized Leader | $z_i \leftarrow z_i - sigma \cdot w_i; \quad n_i \leftarrow n_i + g \cdot g;$ <br> $w_i \leftarrow 0, \quad \text{if } \vert {z_i} \vert \le \lambda_1;$ <br> $w_i \leftarrow  \left( \frac{\beta +\sqrt{n_i} } {\alpha} + \lambda_2 \right)^{-1} \cdot \left(\lambda_1 \cdot sign - z_i \right) \quad othersize.$ |
+| 优化算法 | 参数更新 | 主要特点 |
+| :--: | --- | --- |
+| GD | $w_i \leftarrow w_i - \eta \cdot g_i$ | 全局学习率 | 
+| AdaGrad | $w_i \leftarrow w_i - \frac{\eta}{\sqrt{n_i} + \epsilon} \cdot g_i; \quad n_i \leftarrow n_i + g_i \cdot g_i;$ | 1. 每个参数有自己的学习率，初始化后动态调整; <br> 2. 缺点：参数更新能力越来越弱 | 
+| AdaDelta | $w_i \leftarrow w_i - - \dfrac{RMS[\Delta w]_{t-1}}{RMS[g]_{t}} \cdot g_i;$ <br> $E[\Delta w^2]_t = \gamma E[\Delta w^2]_{t-1} + (1 - \gamma) \Delta w^2_t; $ |  1. 改进：梯度平方和改为历史梯度平方的衰减平均值；<br>2. 自适应学习率<br>
+| FTRL | $z_i \leftarrow z_i - sigma \cdot w_i; \quad n_i \leftarrow n_i + g \cdot g;$ <br> $w_i \leftarrow 0, \quad \text{if } \vert {z_i} \vert \le \lambda_1;$ <br> $w_i \leftarrow  \left( \frac{\beta +\sqrt{n_i} } {\alpha} + \lambda_2 \right)^{-1} \cdot \left(\lambda_1 \cdot sign - z_i \right) \quad othersize.$ | 1. 学习精度和模型稀疏性二者兼备 <br> 2.  Per-Coordinate Learning Rate
 | ... | ... |
 
 后续可以支持Limited-BGFS, Alternating Least Squares, Markov Chain Monte Carlo等参数学习算法。

@@ -9,6 +9,12 @@ tags:
 	- 梯度提升法
 	- 受限约束优化
 
+非常赞：优化算法总结文档：http://sebastianruder.com/optimizing-gradient-descent/
+优化算法：http://www.cnblogs.com/neopenx/p/4768388.html
+优化算法；Coupled Group Lasso
+点击率预估模型经典简介：http://blog.csdn.net/starzhou/article/details/51769561
+论文： Coupled group lasso for web-scale ctr prediction in display advertising
+
 ---
 
 + author: zhouyongsdzh@foxmail.com
@@ -35,6 +41,7 @@ tags:
 + [6. ADMM与统计机器学习](#6.ADMM与统计机器学习)
 + [7. ADMM与机器通信](#7.ADMM与机器通信)
 + [8. ADMM应用场景](#8.ADMM应用场景)
++ [9. 基于MPI的ADMM框架实现](#9.基于MPI的ADMM框架实现)
 + [参考资料](#参考资料) 
 
 <h3 id="0.写在前面">0. 写在前面</h3>
@@ -561,10 +568,15 @@ generalized lasso, group lasso, 高斯图模型，Tensor型图模型等问题的
 | --- | :--- | --- | 
 | admm | Lasso (Group Lasso) <br> Logistic Regression <br> Factorization Machine <br> Filed-awared Factorization Machine | sgd <br> adaptive sgd <br> ftrl <br> lbfgs <br> mcmc <br> ... |
 
-### ADMM应用场景
+### <h3 id="8.ADMM应用场景">8. ADMM应用场景</h3>
 
 + Big-Data Learning 
 + Multi-Task Learning 
+
+### <h3 id="9.基于MPI的ADMM框架实现">9. 基于MPI的ADMM框架实现</h3>
+#### 数据节点
+
+#### 模型节点
 
 <h3 id="参考资料">参考资料</h3>
 

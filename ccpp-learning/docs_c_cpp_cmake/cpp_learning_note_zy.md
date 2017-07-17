@@ -494,6 +494,36 @@ make install        // 在安装目录下生成bin, include, lib目录
 > 
 > protobuf message的clear()操作是存在cache机制的，它并不会释放申请的空间，这导致占用的空间越来越大。如果程序中protobuf message占用的空间变化很大，那么最好每次或定期进行清理。这样可以避免内存不断的上涨。
 
+<h3 id="5.3.gtest">5.3. gtest</h3>
+
+#### 1. 编译与使用
+源码地址：https://github.com/google/googletest.git
+
+```c++
+git clone https://github.com/google/googletest.git
+cd gooletest/
+cmake .
+make 
+```
+在应用时，只需要用到静态库和头文件。
+
+```
+静态库地址：googlemock/gtest/libgtest* .  //  libgtest.a与libgtest_main.a
+头文件地址：googletest/include
+```
++ 使用
+
+```bash
+cd googletest/samples       # 使用示例
+cp -r ../../googlemock/gtest/libgtest* .   # copy静态库
+g++ -I ../include/ -c sample2_unittest.cc    # 生成sample2_unittest.o 
+g++ -I ../include/ sample2.o sample2_unittest.o libgtest_main.a libgtest.a -lpthread -o test2   # 生成可执行文件
+./test2    # 运行
+```
+如果要想运行samples中的其它示例，只需要改sample2_unittest文件即可。
+> 也可以直接在`googletest/make`目录下运行make, 得到sample1_unittest可执行文件。
+
+
 
 ## 踩过的坑儿
 
@@ -653,3 +683,10 @@ void run(std::unordered_map<int, mit::Unit * > & map_weight_, int key) { ... }
 ```
 
 继续跟进问题：
+
+---
+### 9. [the following virtual functions are pure within ‘mit::FFM’...]()
+
+具体是`mit::Model`类中有4个纯虚函数(`virtual type method() = 0;`)，而在子类中仅覆写了两个(`override`)，因而提示`下面的虚函数是纯的，必需要覆写~~~`.
+
+> 纯虚函数："virtual type method() ＝0；"； 如果不带`=0`,只有`virtual type method();`则在子类中可以不覆写（不过存在隐患）。
