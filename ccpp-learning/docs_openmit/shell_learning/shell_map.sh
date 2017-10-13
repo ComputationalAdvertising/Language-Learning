@@ -1,11 +1,5 @@
 #!/bin/bash
  
-#########################################
-# File Name: shell_map.sh
-# Author: zhouyong03@meituan.com
-# Created Time: 2017-03-08 19:47:51
-#########################################
- 
 source conf.sh
 
 service_version=${task2job["${TASK}_service_version"]}

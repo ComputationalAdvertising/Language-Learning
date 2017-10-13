@@ -1,7 +1,14 @@
-## DiML-综述
+## OpenMIT先睹为快
 
-+ Author: BaiGang, ZhouYong
++ Author: ZhouYong
 + Date: 2015.12.10～
+
+目录
+
++ 作业控制
+    + 事务监控
+    + 作业进度追踪
+    + 作业日志 
 
 参考知乎@白刚的回答：https://www.zhihu.com/question/37057945
 
@@ -247,3 +254,19 @@ OpenMIT是基于分布式系统实现的机器学习工具包，同时拥有大�
 
 + 基于MPI的大规模机器学习
 + 基于Parameter Server的大规模机器学习
+
+
+## 作业控制
+
+### 事务管理
+
+在机器学习任务执行过程中，如果想了解整个任务包含哪些核心过程，以及子任务的耗时时间，便于分析和优化，这时该如何处理呢？OpenMIT引入了事务（Transaction）的概念，可以很方面的帮助我们了解和分析子任务相关信息。
+
+要描述一个事务，我们需要通过不同的属性值来描述，OpenMIT里事务消息（TMessage）的定义如下：
+
+
+```struct TMessage {
+  //   std::string type;     std::string name;  uint32_t level;  uint64_t timestamp;
+  // ...}; // struct TMessage
+```
+
