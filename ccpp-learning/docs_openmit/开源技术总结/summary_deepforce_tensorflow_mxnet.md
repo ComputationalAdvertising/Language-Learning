@@ -13,7 +13,8 @@
     + [1.2. 核心概念](#1.2.核心概念)
         + [1.2.1. Session](#1.2.1.Session) 
         + [1.2.2. Tensor](#1.2.2.Tensor)
-        + [1.2.3. Graph](#1.2.3.Graph)
+        + [1.2.3. Operation](#1.2.3.Operation)
+        + [1.2.4. Graph](#1.2.4.Graph)
 
 ---
 
@@ -26,7 +27,7 @@
 
 # TensorFlow 
 
-<h2 id="1.先睹为快">1. 先睹为快</h2>
+<h2 id="1.TensorFlow入门">1.TensorFlow入门</h2>
 
 <h3 id="1.1.Installing TensorFlow on Ubuntu">1.1. Installing TensorFlow on Ubuntu</h3>
 
@@ -63,6 +64,8 @@ Uninstalling：`rm -rf ${targetDirectory}`
 
 ```py
 (tensorflow) xyz@ubuntu:~/software$ pythonPython 2.7.12 (default, Nov 19 2016, 06:48:10) [GCC 5.4.0 20160609] on linux2Type "help", "copyright", "credits" or "license" for more information.>>> import tensorflow as tf>>> hello = tf.constant('Hello, TensorFlow!')>>> sess = tf.Session()2017-08-04 17:47:57.610547: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.1 instructions, but these are available on your machine and could speed up CPU computations.2017-08-04 17:47:57.610595: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.2 instructions, but these are available on your machine and could speed up CPU computations.2017-08-04 17:47:57.610604: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX instructions, but these are available on your machine and could speed up CPU computations.2017-08-04 17:47:57.610610: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX2 instructions, but these are available on your machine and could speed up CPU computations.2017-08-04 17:47:57.610615: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use FMA instructions, but these are available on your machine and could speed up CPU computations.>>> print(sess.run(hello))Hello, TensorFlow!
+>>> print(tf.__version__)   // 查看tensorflow版本
+1.2.1
 ```
 说明安装成功。
 
@@ -130,6 +133,156 @@ which bazel
 > Ubuntu上安装bazel 参考官网：https://docs.bazel.build/versions/master/install-ubuntu.html . 官网也介绍了bazel的二进制安装方式（Install using binary installer） 
 > 
 参考：https://www.tensorflow.org/get_started/get_started
+
+
+<h3 id="1.2.核心概念">1.2.核心概念</h3>
+
+Tensorflow是基于图（`Graph`）的计算系统。而图的节点则是由操作（`Operation`）来构成的，而图的各个节点之间则是由张量（`Tensor`）作为边来连接在一起的。所以Tensorflow的计算过程就是一个Tensor流图。Tensorflow的图则是必须在一个`Session`中来计算。 我们先看下`Session`是什么？
+
+---
+<h4 id="1.2.1.Session">1.2.1.Session</h4>
+---
+
+TensorFlow中的Session（会话）的物理意义一句话总结为： 
+
+> **持有并管理TensorFlow程序运行时的所有资源**
+
+**调用Session的方式**
+
+方式一：明确的调用Session的生成函数和关闭Session函数
+
+```py
+import tensorflow as tf
+# create a sessionsess = tf.Session()# use a session to run taskhello = tf.constant("Hello TensorFlow")#print(sess.run(hello))print(hello.eval(session = sess))# close session sess.close()
+```
+调用这种方式时，要明确调用Session.close()，以释放资源。当程序异常退出时，关闭函数就不能被执行，从而导致资源泄露。其中第6行与第7行等价。
+
+方式二： 上下文管理机制自动释放所有资源
+
+```py
+import tensorflow as tf
+# 创建session，并通过上下文机制管理器管理该Session
+hello = tf.constant("Hello TensorFlow")with tf.Session() as sess:  result = sess.run(hello)  print(result)
+# 无需再调用"sess.close()", 退出with statement时，自动关闭会话和释放资源
+```
+
+还有一种Session的默认方式：
+
+```py
+sess = tf.Session()with sess.as_default():  # hello as tensor  print(hello.eval())
+```
+
+在交互式环境下，通过设置默认会话的方式来获取Tensor的取值更为方便，调用函数`tf.InteractiveSession()` 将省去产生的Session注册到默认会话的过程。
+
+建议使用方式二生成会话，这三种方式都可以通过`ConfigProto Protocol Buffer`来配置需要生成的会话，如**并行线程数、GPU分配策略、运算超时时间**等参数，最常用的两个参数是：`allow_soft_placement`和`log_device_placement`.
+
+`ConfigProto`配置方法：
+
+```pyconf = tf.ConfigProto(allow_soft_placement = True,                       log_device_placement = True)sess = tf.Session(config = conf)print(hello.eval(session = sess))
+```
+
+在Unbuntu上打出来的信息：
+
+```bash
+Device mapping: no known devices.2017-10-17 08:55:28.810144: I tensorflow/core/common_runtime/direct_session.cc:265] Device mapping:Const_1: (Const): /job:localhost/replica:0/task:0/cpu:02017-10-17 08:55:28.810471: I tensorflow/core/common_runtime/simple_placer.cc:847] Const_1: (Const)/job:localhost/replica:0/task:0/cpu:0Const: (Const): /job:localhost/replica:0/task:0/cpu:02017-10-17 08:55:28.810488: I tensorflow/core/common_runtime/simple_placer.cc:847] Const: (Const)/job:localhost/replica:0/task:0/cpu:0Hello TensorFlow
+```
+
+`allow_soft_placement`：boolean，一般设置True，很好的支持多GPU或者不支持GPU时自动将运算放在CPU上。
+
+`log_device_placement`：boolean，为True时日志将会记录每个节点被安排在了哪个设备上以方便调试（生产环境通常设置为False 以减少日志量）。
+
+---
+<h4 id="1.2.2.Tensor">1.2.2. Tensor</h4>
+---
+
+Tensor是所有深度学习框架（TF、MxNet等）最核心的组件。在TensorFlow中，将数据表示为张量（Tensor）。
+
+**`Tensor是一个多维数组。标量：0阶张量；向量：1阶张量；矩阵：2阶张量；更高维：n阶张量`**
+
+
+> TensorFlow提供非常丰富的API，最底层的API—TensorFlow Core—提供了完整的编程控制接口。更高级别的API则是基于TensorFlow Core API之上，并且非常容易学习和使用，更高层次的API能够使一些重复的工作变得更加简单。比如tf.contrib.learn帮助你管理数据集等。
+
+> 将各种各样的数据抽象成张量表示，然后再输入神经网络模型进行后续处理是一种非常必要且高效的策略。因为如果没有这一步骤，我们就需要根据各种不同类型的数据组织形式定义各种不同类型的数据操作，这会浪费大量的开发者精力。更关键的是，当数据处理完成后，我们还可以方便地将张量再转换回想要的格式。例如Python NumPy包中**numpy.imread和numpy.imsave**两个方法，分别用来将图片转换成张量对象（即代码中的Tensor对象），和将张量再转换成图片保存起来。
+
+**Rank (秩)**
+
+
+Rank本意是矩阵的秩。不过Tensor Rank与Matrix Rank意义不同，前者的意义看起来更像是维度，比如Rank=1是向量，Rank＝2是矩阵，Rank＝0是标量（一个值）。
+
+**`A tensor's rank is its number of dimensions.`**
+
+>
+>3 # a rank 0 tensor; this is a scalar with shape []   // 没有值 表示标量 <br>
+[1. ,2., 3.] # a rank 1 tensor; this is a vector with shape [3] <br>
+[[1., 2., 3.], [4., 5., 6.]] # a rank 2 tensor; a matrix with shape [2, 3] <br>
+[[[1., 2., 3.]], [[7., 8., 9.]]] # a rank 3 tensor with shape [2, 1, 3]
+
+Shape (形状)
+
+**`Shape就是Tensor在各个维度上的长度组成的数组。`**
+
+> 
+| Rank | 0 | 1 | 2 | 3 | ... |
+| :--: | --- | --- | --- | --- | --- |
+| Shape | `[]` | `[a]` | `[a,b]` | `[a,b,c]` | ... |
+
+
+**[TensorFlow中的Tensor操作](http://www.cnblogs.com/wuzhitj/p/6431381.html)**
+
++ 数据类型转换（casting）
+
+	| 操作 | 描述 |
+	| :-- | :--: | 
+	| `tf.string_to_number`<br>`(string_tesnor, out_type=None, name=None)` | 
+	| `tf.to_double(x, name='ToDouble')` |
+	
++ 形状操作（shaping）
+
+	| 操作 | 描述 |
+	| :-- | --- |
+	| `tf.shape(input, name=None)` | 返回Tensor的shape <br> `t is [[[1,1,1], [2,2,2]], [[3,3,3], 4,4,4]]]`<br> `tf.shape(t) --> [2,2,3]` |
+	| `tf.size(input, name=None)` | 返回Tensor的元素数量<br>`t is [[[1,1,1], [2,2,2]], [[3,3,3], 4,4,4]]]`<br> `tf.size(t) --> 12` |
+	| `tf.rank(input, name=None)` | 返回Tensor的rank（维度）<br>`t is [[[1,1,1], [2,2,2]], [[3,3,3], 4,4,4]]]`<br> `tf.rank(3) --> 3` |
+	| `tf.reshape(tensor, shape, name=None)` | 改变Tensor的形状 .... |
+	
++ 切片与合并（slicing & joining）
+
+	| 操作 | 描述 |
+	| :-- | --- |
+	| `tf.slice(input_, begin, size, name=None)` |
+
+---	
+<h4 id="1.2.3.Operation">1.2.3. Operation</h4>
+---
+
+一个Operation就是TensorFlow Graph中的一个计算节点。它接受0个或多个Tensor对象作为输入，然后产生0个或多个Tensor对象作为输出。
+
+```py
+import tensorflow as tf# ============ create op ===============# creat a constant op. shape: 1*2matrix1 = tf.constant([[3., 3.]])# create a constant op. shape: 2*1matrix2 = tf.constant([[2.], [2.]])# create a matrix multiple op product = tf.matmul(matrix1, matrix2)# ============ create session ==========with tf.Session() as sess:  result = sess.run(product)  print(result)
+```
+
+当一个Graph加载到一个Session中，则可以调用`Session.run(product)`来执行op，或者调用`op.run()`来执行（`product.run()`是`tf.get_default_session().run()`的缩写）。
+
+---
+<h4 id="1.2.4.Graph">1.2.4. Graph</h4>
+---
+
+```py
+import tensorflow as tf# ============ graph: use method 1 ===============c = tf.constant(value=1)assert c.graph is tf.get_default_graph()print(c.graph)print(tf.get_default_graph())# ============ graph: use method 2 ===============g = tf.Graph()print("g: ", g)with g.as_default():  d = tf.constant(value=2)  print(d.graph)g2 = tf.Graph()print("g2: ", g2)g2.as_default()e = tf.constant(value=10)print(e.graph)
+```
+运行结果：
+
+```py
+<tensorflow.python.framework.ops.Graph object at 0x7fc7464bd490><tensorflow.python.framework.ops.Graph object at 0x7fc7464bd490>('g: ', <tensorflow.python.framework.ops.Graph object at 0x7fc7464c6750>)<tensorflow.python.framework.ops.Graph object at 0x7fc7464c6750>('g2: ', <tensorflow.python.framework.ops.Graph object at 0x7fc732eaea10>)<tensorflow.python.framework.ops.Graph object at 0x7fc7464bd490>
+```
+
+`Graph`的三种用法：
+
++ **默认图**： 如`use method1`中使用的是默认图(通过`tf.get_default_graph()`)；
++ **上下文管理器**：如`use method2`使用到`Graph.as_default()`的上下文管理器（context manager），它能够在上下文里面覆盖默认的图。
+    
+    > 创建一个新图g，然后把它设置为默认。接下来的操作就不是在默认图中，而是在g中了（可以理解为g就是新的默认图了）。<br>
+    > 注意：最后的变量e不是定义在with语句里面的，是在最开始的那个图中（不在上下文管理器的图中）。
 
 
 # MxNet
