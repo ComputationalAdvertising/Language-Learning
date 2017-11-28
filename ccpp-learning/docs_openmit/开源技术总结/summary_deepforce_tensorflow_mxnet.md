@@ -343,12 +343,12 @@ cd lapack && make           # 该过程比较耗时
 ```bash
 make -j $(nproc) USE_OPENCV=1 USE_BLAS=openblas
 # 报错1
-In file included from /opt/meituan/rec-ads/mltools/mltools-deepapp/mxnet/mshadow/mshadow/tensor.h:16:0,
+In file included from /opt/xxx/rec-ads/mltools/mltools-deepapp/mxnet/mshadow/mshadow/tensor.h:16:0,
                  from include/mxnet/base.h:31,
                  from src/operator/nn/./../mxnet_op.h:29,
                  from src/operator/nn/./softmax-inl.h:29,
                  from src/operator/nn/softmax.cc:24:
-/opt/meituan/rec-ads/mltools/mltools-deepapp/mxnet/mshadow/mshadow/./base.h:143:23: fatal error: cblas.h: No such file or directory
+/opt/xxx/rec-ads/mltools/mltools-deepapp/mxnet/mshadow/mshadow/./base.h:143:23: fatal error: cblas.h: No such file or directory
      #include <cblas.h>
                        ^
 提示openblas下面的cblas.h和-lopenblas不存在，［临时方案］需要修改mshadow/make/mshadow.mk文件
@@ -361,7 +361,7 @@ In file included from /opt/meituan/rec-ads/mltools/mltools-deepapp/mxnet/mshadow
 
 set -x
 
-GCC_HOME=/opt/meituan/gcc-4.8.2
+GCC_HOME=/opt/xxx/gcc-4.8.2
 
 export PATH=${GCC_HOME}/bin:$PATH
 export LD_LIBRARY_PATH=$GCC_HOME/lib64:$LD_LIBRARY_PATH
@@ -369,7 +369,7 @@ echo $PATH
 echo ${LD_LIBRARY_PATH}
 
 # OpenBLAS
-OPENBLAS_DIR=/opt/meituan/rec-ads/mltools/mltools-deepapp/software/OpenBLAS_lib
+OPENBLAS_DIR=/opt/xxx/rec-ads/mltools/mltools-deepapp/software/OpenBLAS_lib
 export LD_LIBRARY_PATH=$OPENBLAS_DIR/lib:$LD_LIBRARY_PATH
 export PATH=$OPENBLAS_DIR/bin:$PATH
 export PLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:$OPENBLAS_DIR/include

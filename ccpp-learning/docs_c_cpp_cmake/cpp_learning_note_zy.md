@@ -721,7 +721,7 @@ ValGrind其他检测信息说明
 
 使用OpenMP时，需要在CMake文件中 添加 **编译环境代码**，即：```set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")```.
 
-异常示例4：```undefined reference to `spacex::FFM<unsigned long, float>::Predict(dmlc::Row<unsigned long> const&, std::vector<unsigned long, std::allocator<unsigned long> > const&, std::vector<float, std::allocator<float> > const&, std::vector<int, std::allocator<int> > const&)'```
+异常示例4：```undefined reference to `mit::FFM<unsigned long, float>::Predict(dmlc::Row<unsigned long> const&, std::vector<unsigned long, std::allocator<unsigned long> > const&, std::vector<float, std::allocator<float> > const&, std::vector<int, std::allocator<int> > const&)'```
 
 主要原因是这里把模版类分离编译导致。就是把模版类的声明和实现分别放在了头文件和源文件中。而g++本身不支持模版类的分离编译，所有提示找不到方法的具体实现（在*.cc中）。
 

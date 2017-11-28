@@ -99,7 +99,7 @@ Intellij IDEA 安装 Protobuf 插件
     ```
         syntax = "proto3";
 
-        option java_package = "com.dianping.midas.mtad.offline.protobuf";
+        option java_package = "com.openmit.core.offline.protobuf";
         option java_outer_classname = "CtrProto";
 
         message CtrInfo {
