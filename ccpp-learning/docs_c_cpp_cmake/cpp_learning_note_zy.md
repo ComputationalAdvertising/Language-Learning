@@ -31,15 +31,15 @@ issue:
 
 #### 4. C++11新特性
 
-| [[std::function](#4.1.function)] | [[std::bind]()] | [[lambda]()] | 哦县城
+| [[std::function](#4.1.function)] | [[std::bind]()] | [[lambda]()
 | --- | --- | --- | ---| 
 
 #### 5. [C++项目常用工具](#5.C++项目常用工具)
 
 | [[protobuf](#5.1.protobuf)] | [[glog](#5.2.glog)] | [[gtest](#5.3.gtest)] | [[grpc](#5.4.grpc)] | 
 | --- | --- | --- | --- |
-|[[c++与java](#5.5.c++与java)] | [[c++与python](#5.5.c++与python)] |
-|[[valgrind](#5.3.1.valgrind)] |
+|[[c++与java](#5.5.c++与java)] | [[c++与python](#5.6.c++与python)] |
+|[[valgrind](#5.3.1.valgrind)] | [[openmp](#5.3.2.openmp)]
 
 #### 6. [C++问题总结](#6.C++问题总结)
 
@@ -693,6 +693,10 @@ ValGrind其他检测信息说明
 
 + `Conditional jump or move depends on uninitialised value(s)` : 表明程序中有字符串、结构体成员等变量没有初始化（一般不会有影响）
 + `valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=leak.log`：将检测结果保存至leak.log中
+
+<h3 id="5.3.2.openmp">5.3.2. openmp</h3>
+
++ `openmp for使用`: http://blog.csdn.net/csdnwei/article/details/51882422
 
 ## C++问题总结
 
